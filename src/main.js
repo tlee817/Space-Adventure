@@ -23,7 +23,7 @@ controls.maxDistance = 50;
 
 // Create Scenes
 const { scene: scene1, main_hub_planet, main_hub_spaceship } = createScene1();
-const scene2 = createScene2();
+const scene2 = createScene2(renderer, camera);
 const scene3 = createScene3();
 
 let activeScene = scene1;
