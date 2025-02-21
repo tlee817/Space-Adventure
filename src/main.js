@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createScene1 } from './scene1.js';
 import { createScene2 } from './scene2.js';
-import { createScene3 } from './scene3.js';
+import { createScene3, spaceship, stabilityWings, boosterEngine } from './scene3.js';
 
 // Renderer 
 const renderer = new THREE.WebGLRenderer();
@@ -73,6 +73,108 @@ window.addEventListener('click', (event) => {
 });
 
 
+// scene3 code:
+// globals to keep track of scene3 spaceship's position
+let spX = 0;
+let spY = 0;
+let beX = 0;
+let beY = -2.2;
+let swX = 0;
+let swY = 0;
+const jumpAmount = 0.3;
+// onKeyPress is called each time a key is pressed
+window.addEventListener('keydown', onKeyPress);
+// keypress function scene3 spaceship flight controls
+function onKeyPress(event) {
+    //console.log(`Key ${event.key} pressed`);
+    if (activeScene === scene3) // for flying the spaceship
+    {
+        switch (event.key) {
+            case "ArrowUp": // up arrow
+                spY = spY + jumpAmount;
+                beY = beY + jumpAmount;
+                swY = swY + jumpAmount;
+                spaceship.position.set(spX, spY, 0);
+                boosterEngine.position.set(beX, beY, 0);
+                stabilityWings.position.set(swX, swY, 0);
+                //console.log(`Key ${event.key} pressed`);
+                break;
+            case "ArrowDown": // down arrow pressed
+                spY = spY - jumpAmount / 3;
+                beY = beY - jumpAmount / 3;
+                swY = swY - jumpAmount / 3;
+                spaceship.position.set(spX, spY, 0);
+                boosterEngine.position.set(beX, beY, 0);
+                stabilityWings.position.set(swX, swY, 0);
+                //console.log(`Key ${event.key} pressed`);
+                break;
+            case "ArrowLeft":
+                spX = spX - jumpAmount / 2;
+                beX = beX - jumpAmount / 2;
+                swX = swX - jumpAmount / 2;
+                spaceship.position.set(spX, spY, 0);
+                boosterEngine.position.set(beX, beY, 0);
+                stabilityWings.position.set(swX, swY, 0);
+                //console.log(`Key ${event.key} pressed`);
+                break;
+            case "ArrowRight":
+                spX = spX + jumpAmount / 2;
+                beX = beX + jumpAmount / 2;
+                swX = swX + jumpAmount / 2;
+                spaceship.position.set(spX, spY, 0);
+                boosterEngine.position.set(beX, beY, 0);
+                stabilityWings.position.set(swX, swY, 0);
+                //console.log(`Key ${event.key} pressed`);
+                break;
+            default:
+                console.log(`Default Key ${event.key} pressed`);
+        }
+    }
+}
+const smallNegativeYMovement = 0.02;
+
+let planetCollisionGeometry = new THREE.SphereGeometry(1, 8, 8);
+let planetCollisionMaterial = new THREE.MeshPhongMaterial({ 
+    color: 0x80FFFF, 
+    specular: 0xffffff, 
+    shininess: 40 
+});
+let collisionPlanet = new THREE.Mesh(planetCollisionGeometry, planetCollisionMaterial);
+collisionPlanet.position.set(-2, 10, 0);
+let cpX = -2;
+let cpY = 5;
+let cpXDelta = 0.01;
+let cpYDelta = -0.05;
+let addedCollisionPlanet = false;
+
+function scene3FlightSimulationUpdate()
+{
+    if (activeScene === scene3)
+    {
+        // auto enable negative movement of the spaceship, in -y direction to simulate flight
+        spY = spY - smallNegativeYMovement;
+        beY = beY - smallNegativeYMovement;
+        swY = swY - smallNegativeYMovement;
+        spaceship.position.set(spX, spY, 0);
+        boosterEngine.position.set(beX, beY, 0);
+        stabilityWings.position.set(swX, swY, 0);
+
+        // for a certain amount of time, have planets zoom by the spaceship
+        if (!addedCollisionPlanet)
+        {
+            addedCollisionPlanet = true;
+            scene3.add(collisionPlanet); // do once
+        }
+        else
+        {
+            cpX = cpX + cpXDelta;
+            cpY = cpY + cpYDelta;
+            collisionPlanet.position.set(cpX, cpY, 0);
+        }
+    }
+}
+
+
 function animate() {
     requestAnimationFrame(animate);
     if(controls.enabled)
@@ -80,6 +182,8 @@ function animate() {
      controls.update();
     }
     renderer.render(activeScene, camera);
+
+    scene3FlightSimulationUpdate();
 }
 
 animate();
