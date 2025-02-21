@@ -4,6 +4,8 @@ export function createScene2(renderer, camera) {
     const scene = new THREE.Scene();
 
     const sphereSpacing = 2.5;
+
+    // Planets init
     const spheres = [];
     for (let i = 0; i < 7; i++) {
         const sphere = new THREE.Mesh(
@@ -15,6 +17,8 @@ export function createScene2(renderer, camera) {
         spheres.push(sphere);
         
     }
+
+    // Adjust planet position
     spheres[0].position.y=2.5;
     spheres[1].position.x=-4;
     spheres[2].position.y=-4;
@@ -25,6 +29,11 @@ export function createScene2(renderer, camera) {
     spheres[6].position.y=6;
     spheres[6].position.z=-7;
 
+    // Set Planets' Hitpoints
+    for (let i = 0; i < 7; i++) 
+    {
+       spheres[i].userData.hitpoint = i+1;
+    }
 
     return scene;
 }

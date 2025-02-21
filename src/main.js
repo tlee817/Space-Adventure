@@ -37,16 +37,38 @@ window.addEventListener('click', (event) => {
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
 
     raycaster.setFromCamera(mouse, camera);
-    const intersects = raycaster.intersectObjects(scene1.children);
 
-    if (intersects.length > 0) {
+    if(activeScene === scene1)  // Main Hub
+    {
+    const intersects = raycaster.intersectObjects(scene1.children);
+    if (intersects.length > 0) 
+    {
         const clickedObject = intersects[0].object;
 
-        if (clickedObject === main_hub_planet) {
+        if (clickedObject === main_hub_planet) 
+        {
             activeScene = scene2;
-        } else if (clickedObject === main_hub_spaceship) {
+        }else if (clickedObject === main_hub_spaceship) 
+        {
             activeScene = scene3;
         }
+    }
+    }else if(activeScene===scene2)  // Planet Shooting
+    {
+        const intersects = raycaster.intersectObjects(scene2.children);
+        if (intersects.length > 0) 
+        {
+            const clickedPlanet = intersects[0].object;
+            clickedPlanet.userData.hitpoint =  clickedPlanet.userData.hitpoint -1;
+            console.log("hitpoint: ", clickedPlanet.userData.hitpoint );
+            if (clickedPlanet.userData.hitpoint === 0) 
+            {
+                activeScene.remove(clickedPlanet);
+            }
+        }
+    }else   // Flying Spaceship
+    {
+
     }
 });
 
