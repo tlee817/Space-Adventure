@@ -2,7 +2,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createScene1 } from './scene1.js';
 import { createScene2 } from './scene2.js';
-import { createScene3, spaceship, stabilityWings, boosterEngine } from './scene3.js';
+// import { createScene3, spaceship2, stabilityWings, boosterEngine } from './scene3.js';
+import { createScene3} from './scene3.js';
 
 // Renderer 
 const renderer = new THREE.WebGLRenderer();
