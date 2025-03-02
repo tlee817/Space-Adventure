@@ -23,7 +23,7 @@ controls.minDistance = 10;
 controls.maxDistance = 50;
 
 // Create Scenes
-const { scene: scene1, main_hub_planet, main_hub_spaceship } = createScene1();
+const { scene: scene1, main_hub_planet, main_hub_spaceship } = createScene1(renderer,camera);
 const scene2 = createScene2(renderer, camera);
 const scene3 = createScene3();
 
@@ -82,6 +82,17 @@ function animate() {
     {
      controls.update();
     }
+    
+    if(activeScene===scene1)
+    {
+        const stars = activeScene.children.find(obj => obj.userData.isStarField);
+        if (stars) {
+            stars.rotation.y += 0.0003; 
+            stars.rotation.x += 0.0001;
+            stars.rotation.z += 0.0002;
+        }
+    }
+
     renderer.render(activeScene, camera);
 
     scene3FlightSimulationUpdate();

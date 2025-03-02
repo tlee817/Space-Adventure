@@ -1,17 +1,106 @@
 import * as THREE from 'three';
 
-export function createScene1() {
+// Star Background
+export function createStarField() {
+    const starGeometry = new THREE.BufferGeometry();
+    const starMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.1, 
+        transparent: true
+    });
+
+    const starVertices = [];
+    for (let i = 0; i < 5000; i++) { 
+        const x = (Math.random() - 0.5) * 100; 
+        const y = (Math.random() - 0.5) * 100; 
+        const z = (Math.random() - 0.5) * 100;
+        starVertices.push(x, y, z);
+    }
+
+    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    stars.userData.isStarField = true;
+    return stars;
+}
+
+
+function createSunMaterial() {
+    const textureLoader = new THREE.TextureLoader();
+    const noiseTexture = textureLoader.load('assets/noise.jpg'); 
+
+    return new THREE.ShaderMaterial({
+        uniforms: {
+            time: { value: 0 },
+            sunColor: { value: new THREE.Color(0xffcc00) }, 
+            noiseTexture: { value: noiseTexture }, 
+            emissive: { value: new THREE.Color(0xffaa00) }  
+        },
+        vertexShader: `
+            varying vec2 vUv;
+            uniform float time;
+            void main() {
+                vUv = uv;
+
+                float pulse = sin(time * 2.0 + length(position) * 0.3) * 2.5;
+                vec3 newPosition = position + normal * pulse;
+
+                gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
+            }
+        `,
+        fragmentShader: `
+            varying vec2 vUv;
+            uniform float time;
+            uniform vec3 sunColor;
+            uniform vec3 emissive;
+            uniform sampler2D noiseTexture;
+
+            void main() {
+               
+                vec4 noiseTex = texture2D(noiseTexture, vUv + time * 0.02);
+                float noise = noiseTex.r;
+
+                if (noise < 0.1) {
+                    noise = 0.5 + 0.5 * sin(time * 2.0);
+                }
+
+                vec3 finalColor = mix(sunColor, emissive, noise * 0.6);
+                
+                gl_FragColor = vec4(finalColor, 1.0);
+            }
+        `,
+        transparent: false
+    });
+}
+
+
+
+// Main Hub Scene
+
+export function createScene1(renderer, camera) {
     const scene = new THREE.Scene();
 
-    // Comment: Sun is just a light source in the main hub (No real usage , can remove later)
-    let sun_Geometry = new THREE.SphereGeometry(1, 10, 10);
-    let sun_Material = new THREE.MeshBasicMaterial({ color: 0xffffff });
-    let sun = new THREE.Mesh(sun_Geometry, sun_Material);
+    camera.position.set(0, 5, 20);
+
+
+    const star = createStarField();
+    scene.add(star);
+
+    
+    const sunMaterial = createSunMaterial();
+    const sunGeometry = new THREE.SphereGeometry(50, 32, 32); 
+    const sun = new THREE.Mesh(sunGeometry, sunMaterial);
+    sun.position.set(-140, -50, -500); 
     scene.add(sun);
 
-    let sunLight = new THREE.PointLight(0xffffff, 1, 0, 1);
-    sunLight.position.set(0, 3, 0);
+    const sunLight = new THREE.DirectionalLight(0xfff6a1, 2); 
+    sunLight.position.set(-250, -50, -500);
+    sunLight.target.position.set(0, 0, 0);
     scene.add(sunLight);
+    scene.add(sunLight.target);
+
+    // Ambient Light
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.2);
+    scene.add(ambientLight);
 
     // Main Hub (Select game)
     let main_hub_planet_Geometry = new THREE.SphereGeometry(1, 8, 8);
@@ -30,5 +119,15 @@ export function createScene1() {
     main_hub_spaceship.position.set(2, 0, 0);
     scene.add(main_hub_spaceship);
 
+    function animate() {
+        requestAnimationFrame(animate);
+        sunMaterial.uniforms.time.value += 0.02; 
+        renderer.render(scene, camera);
+    }
+    animate();
+
+
     return { scene, main_hub_planet, main_hub_spaceship }; 
 }
+
+
