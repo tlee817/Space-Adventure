@@ -1,31 +1,42 @@
 import * as THREE from 'three';
+// import planetImg from '../assets/planettexture.png';
 
 export function createScene2(renderer, camera) {
     const scene = new THREE.Scene();
 
-    const sphereSpacing = 2.5;
+    const pointLight = new THREE.PointLight(0xFFFFFF, 5, 25, 0.5);
+    pointLight.position.set(0, 0, 0);
+    scene.add(pointLight);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.02);
+    scene.add(ambientLight);
 
-    // Planets init
+    
     const spheres = [];
-    const orbitSpeeds = [0.01, 0.015, 0.008, 0.012, 0.02, 0.009, 0.014]; // Different speeds for variation
-    const orbitRadii = [2.5, 4, 4, 4, 6, 5, 7]; // Radii for orbits
+    const orbitSpeeds = [5/4, 5/5, 5/7.5, 5/10, 5/12.5, 5/15, 5/17.5];
+    const orbitRadii = [2, 4, 6, 8, 11, 14, 19];
+    const planetRadii = [1, 1.5, 1.5, 2, 2, 2.5, 3]
+    const textures = ['../assets/planettexture.png', '../assets/orange.png', '../assets/red.jpg', '../assets/blue_orange.png',
+    '../assets/emerald.png', '../assets/water.jpg', '../assets/earth.png'];
+
     for (let i = 0; i < 7; i++) {
+        const planettexture = new THREE.TextureLoader().load(textures[i]);
+        planettexture.wrapS = THREE.RepeatWrapping;
+        planettexture.wrapT = THREE.RepeatWrapping;
         const sphere = new THREE.Mesh(
-            new THREE.SphereGeometry(1, 32, 32),
-            new THREE.MeshBasicMaterial({ color: 0x0000ff })
+            new THREE.SphereGeometry(planetRadii[i], 64, 64),
+            new THREE.MeshStandardMaterial({map: planettexture, roughness: 1.0, metalness: 0.2})
         );
         sphere.userData = {
-            angle: Math.random() * Math.PI * 2, // Random start angle
+            angle: Math.random() * Math.PI * 2,
             radius: orbitRadii[i],
             speed: orbitSpeeds[i]
         };
-        // sphere.position.y = i * sphereSpacing; 
         scene.add(sphere);
         spheres.push(sphere);
         
     }
 
-    // Adjust planet position
+
     spheres[0].position.y=2.5;
     spheres[1].position.x=-4;
     spheres[2].position.y=-4;
@@ -46,12 +57,13 @@ export function createScene2(renderer, camera) {
         requestAnimationFrame(animate);
         renderer.render(scene, camera);
         spheres.forEach(sphere => {
-            sphere.userData.angle += sphere.userData.speed;
+            sphere.userData.angle += sphere.userData.speed * 0.03;
             sphere.position.x = sphere.userData.radius * Math.cos(sphere.userData.angle);
             sphere.position.z = sphere.userData.radius * Math.sin(sphere.userData.angle);
         });
         
     }
+
 
     animate();
 
