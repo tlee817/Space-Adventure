@@ -1,5 +1,3 @@
-// import * as THREE from 'three';
-
 //export 
 let noseCone;
 //export 
@@ -52,7 +50,6 @@ export function createScene3() {
   document.body.appendChild(renderer.domElement);
 
 
-
   // Create a box (spaceship)
   const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
   const boxMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
@@ -60,10 +57,6 @@ export function createScene3() {
   spaceship.position.set(-5, 0, 0);
   scene.add(spaceship);
 ////////////
-
-
-
-
 
 const textures = ['../assets/FuturisticCoating1.jpg', '../assets/FuturisticCoating2.jpg', '../assets/FuturisticCoating3.jpg', 
   '../assets/FuturisticCoating4.jpg', '../assets/FuturisticCoating5.jpg'];
@@ -97,76 +90,60 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   spaceShipTexture.wrapS = THREE.RepeatWrapping;
   spaceShipTexture.wrapT = THREE.RepeatWrapping;
 
+  noseCone = new THREE.Mesh( new THREE.ConeGeometry(1, 2, 32), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  const noseConeHeight = 2.2;
+  noseCone.position.set(0, noseConeHeight, 0);
 
-    noseCone = new THREE.Mesh( new THREE.ConeGeometry(1, 2, 32), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-    //noseCone.position.set(-8, 0, 0);
-    noseCone.position.set(0, 2.2, 0);
+  const boosterEngineWidth = 0.8;
+  boosterEngine = new THREE.Mesh( new THREE.CylinderGeometry(boosterEngineWidth, 0.8, 3), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+  boosterEngine.position.set(-8, -2.2, 0);
 
-
-    boosterEngine = new THREE.Mesh( new THREE.CylinderGeometry(0.8, 0.8, 3), new THREE.MeshBasicMaterial({ color: 0xffffff }));
-    boosterEngine.position.set(-8, -2.2, 0);
-    //boosterEngine.position.set(0, 0, 0);
-
-
-    // const wingStabilityVertices = new Float32Array([
-    //    -8,  1, 0, // Top
-    //    -9, -4, 0, // lower left
-    //    -7, -4, 0  // lower right
-    // ]);
-
-  //   const wingStabilityVertices = new Float32Array([
-  //     -8,  1, 0, // Top
-  //     -9.5, -3.7, 0, // lower left
-  //     -6.5, -3.7, 0  // lower right
-  //  ]);
-
-
-   const wingStabilityVertices = new Float32Array([
-    0,  3.2, 0, // Top
-    -1.5, -1.5, 0, // lower left
-    1.5, -1.5, 0  // lower right
+  const wingStabilityVertices = new Float32Array([
+  0,  3.2, 0, // Top
+  -1.5, -1.5, 0, // lower left
+  1.5, -1.5, 0  // lower right
  ]);
 
-    const wingsGeoBuffer = new THREE.BufferGeometry();
-    wingsGeoBuffer.setAttribute('position', new THREE.BufferAttribute(wingStabilityVertices, 3));
-    stabilityWings = new THREE.Mesh(wingsGeoBuffer, new THREE.MeshBasicMaterial({ color: 0x4293f5, side: THREE.DoubleSide }));
+  const wingsGeoBuffer = new THREE.BufferGeometry();
+  wingsGeoBuffer.setAttribute('position', new THREE.BufferAttribute(wingStabilityVertices, 3));
+  
+  //stabilityWings = new THREE.Mesh(wingsGeoBuffer, new THREE.MeshBasicMaterial({ map: spaceShipTexture, side: THREE.DoubleSide }));
+  stabilityWings = new THREE.Mesh(wingsGeoBuffer, new THREE.MeshBasicMaterial({ color: 0x4293f5, side: THREE.DoubleSide }));
 
-    // assemble the spaceship...
-    //boosterEngine.position.set(-15, 0, 0);
-    
-    boosterEngine.add(noseCone);
-    scene.add(stabilityWings);
+  const uvMapping = new Float32Array([
+    0.5, 1, // top
+    0, 0, // down left
+    1, 0 // down right
+  ]);
+  // This keeps the wings a blue tint:
+  stabilityWings.geometry.setAttribute('uv', new THREE.BufferAttribute(uvMapping, 2));
+
+  boosterEngine.material.map = spaceShipTexture;
+  noseCone.material.map = spaceShipTexture;
+  stabilityWings.material.map = spaceShipTexture;
+
+  // add the flame to the boosterEngine
+  const flameTexture = new THREE.TextureLoader().load(flametextures[6]);
+  flameTexture.wrapS = THREE.RepeatWrapping;
+  flameTexture.wrapT = THREE.RepeatWrapping;
+
+  const flame = new THREE.ConeGeometry(0.8, 2, 32);
+  const flameMaterial = new THREE.MeshBasicMaterial({ map: flameTexture, transparent: true, opacity: 0.7 });
+  const flameMesh = new THREE.Mesh(flame, flameMaterial);
+  flameMesh.position.set(0, -2.2, 0);
+  flameMesh.rotation.x = Math.PI; // rotate the flame to point downwards
+  
+  // assemble the spaceship...  
+  boosterEngine.add(noseCone);
+  boosterEngine.add(flameMesh);
+  boosterEngine.add(stabilityWings);
+
+  // boosterEngine combo alias:
+  const rocket = boosterEngine;
+  scene.add(rocket);
 
 
-    scene.add(boosterEngine);
 
-    //boosterEngine.setAttribute('material', new THREE.MeshStandardMaterial({map: spaceShipTexture, roughness: 1.0, metalness: 0.2}));
-    boosterEngine.material.map = spaceShipTexture;
-    noseCone.material.map = spaceShipTexture;
-    stabilityWings.material.map = spaceShipTexture;
-
-    boosterEngine.add(stabilityWings);
-
-
-    // add the flame to the boosterEngine
-    // 6 looks good
-    // 0 is fine
-    const flameTexture = new THREE.TextureLoader().load(flametextures[6]);
-    flameTexture.wrapS = THREE.RepeatWrapping;
-    flameTexture.wrapT = THREE.RepeatWrapping;
-
-    const flame = new THREE.ConeGeometry(0.8, 2, 32);
-    const flameMaterial = new THREE.MeshBasicMaterial({ map: flameTexture, transparent: true, opacity: 0.7 });
-    const flameMesh = new THREE.Mesh(flame, flameMaterial);
-    flameMesh.position.set(0, -2.2, 0);
-    flameMesh.rotation.x = Math.PI; // rotate the flame to point downwards
-    
-    boosterEngine.add(flameMesh);
-
-
-    // scene.add(noseCone);
-    // scene.add(boosterEngine);
-    // scene.add(stabilityWings);
 /////////
 
 
@@ -176,11 +153,31 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
      event.preventDefault();
    }
  });
+
+ let timer = new THREE.Clock();
+
   function animate() {
    requestAnimationFrame(animate);
+
+
+  // Get the elapsed time
+  let elapsedTime = timer.getElapsedTime();
+
+  // controls the flicker of the flame
+  flameMesh.material.opacity = 1.0 - Math.sin(elapsedTime * 50)/6;
+
+  // controls the rate of the up and down flame movement
+  flameMesh.scale.y = 1 + 0.1 * Math.sin(elapsedTime * 100);
+  flameMesh.position.y = flameMesh.position.y + 0.01 * Math.sin(elapsedTime * 100);
+
+
+
+
+
    renderer.render(scene, camera);
  }
  animate();
+
    const sphereGeometry = new THREE.SphereGeometry(2, 16, 16);
   const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });//red planet
   const planet1 = new THREE.Mesh(sphereGeometry, sphereMaterial);
@@ -196,44 +193,107 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
    // Event listeners for movement using arrow keys
   document.addEventListener('keydown', (event) => {
     switch (event.key) {
-      case 'ArrowUp': spaceship.position.y += moveSpeed; break;
-      case 'ArrowDown': spaceship.position.y -= moveSpeed; break;
-      case 'ArrowLeft': spaceship.position.x -= moveSpeed; break;
-      case 'ArrowRight': spaceship.position.x += moveSpeed; break;
+      case 'ArrowUp': rocket.position.y += moveSpeed; break;
+      case 'ArrowDown': rocket.position.y -= moveSpeed; break;
+      case 'ArrowLeft': rocket.position.x -= moveSpeed; break;
+      case 'ArrowRight': rocket.position.x += moveSpeed; break;
     }
     checkCollision();
   });
-   // Function to find the closest point on the spaceship (AABB) to the planet
-  function getClosestPoint(spaceship, spherePos) {
-    const spaceshipMin = spaceship.position.clone().subScalar(0.5); // Half-size of box is 0.5
-    const spaceshipMax = spaceship.position.clone().addScalar(0.5);
-     return new THREE.Vector3(
-      Math.max(spaceshipMin.x, Math.min(spherePos.x, spaceshipMax.x)),
-      Math.max(spaceshipMin.y, Math.min(spherePos.y, spaceshipMax.y)),
-      Math.max(spaceshipMin.z, Math.min(spherePos.z, spaceshipMax.z))
-    );
-  }
    // Function to check for collisions
-  function checkCollision() {
+  function checkCollision()
+  {
     const planets = [planet1, planet2];
     let collisionDetected = false;
-     for (let planet of planets) {
-      const closestPoint = getClosestPoint(spaceship, planet.position);
-      const distance = closestPoint.distanceTo(planet.position);
-       if (distance < sphereRadius) {
+    for (let planet of planets) 
+    {
+      let distancey = Math.abs(rocket.position.y - planet.position.y);
+      let distancex = Math.abs(rocket.position.x - planet.position.x);
+      let distance = Math.sqrt(distancex*distancex + distancey*distancey);
+      if (distance < (sphereRadius + noseConeHeight) && distancex < (sphereRadius + boosterEngineWidth))
+      {
         collisionDetected = true;
         break;
       }
     }
      if (collisionDetected) {
       console.log("Collision detected!");
-      spaceship.material.color.set(0xff0000); //spaceship color will change to red if there is a collision detected
+      // rocket turns red on collision
+      rocket.material.color.set(0xff0000);
+      noseCone.material.color.set(0xff0000);
+      stabilityWings.material.color.set(0xff0000);
     } else {
-      spaceship.material.color.set(0x00ff00); //will stay the same color (green)
+      // reset back to normal color
+      rocket.material.color.set(0xffffff);
+      noseCone.material.color.set(0xffffff);
+      stabilityWings.material.color.set(0x4293f5);
     }
   }
    return scene;
 }
+
+
+
+
+
+
+
+
+
+
+// const sphereGeometry = new THREE.SphereGeometry(2, 16, 16);
+// const sphereMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });//red planet
+// const planet1 = new THREE.Mesh(sphereGeometry, sphereMaterial);
+// planet1.position.set(3, 0, 0); // Position of first planet
+// scene.add(planet1);
+//  // Create the second planet
+// const planet2 = new THREE.Mesh(sphereGeometry, new THREE.MeshBasicMaterial({ color: 0x0000ff }));//blue planet
+// planet2.position.set(-3, 2, 0);
+// scene.add(planet2);
+//  camera.position.z = 10;
+//  let moveSpeed = 0.3;
+// const sphereRadius = 2;//both planets right now have the radius of 2
+//  // Event listeners for movement using arrow keys
+// document.addEventListener('keydown', (event) => {
+//   switch (event.key) {
+//     case 'ArrowUp': spaceship.position.y += moveSpeed; break;
+//     case 'ArrowDown': spaceship.position.y -= moveSpeed; break;
+//     case 'ArrowLeft': spaceship.position.x -= moveSpeed; break;
+//     case 'ArrowRight': spaceship.position.x += moveSpeed; break;
+//   }
+//   checkCollision();
+// });
+//  // Function to find the closest point on the spaceship (AABB) to the planet
+// function getClosestPoint(spaceship, spherePos) {
+//   const spaceshipMin = spaceship.position.clone().subScalar(0.5); // Half-size of box is 0.5
+//   const spaceshipMax = spaceship.position.clone().addScalar(0.5);
+//    return new THREE.Vector3(
+//     Math.max(spaceshipMin.x, Math.min(spherePos.x, spaceshipMax.x)),
+//     Math.max(spaceshipMin.y, Math.min(spherePos.y, spaceshipMax.y)),
+//     Math.max(spaceshipMin.z, Math.min(spherePos.z, spaceshipMax.z))
+//   );
+// }
+//  // Function to check for collisions
+// function checkCollision() {
+//   const planets = [planet1, planet2];
+//   let collisionDetected = false;
+//    for (let planet of planets) {
+//     const closestPoint = getClosestPoint(spaceship, planet.position);
+//     const distance = closestPoint.distanceTo(planet.position);
+//      if (distance < sphereRadius) {
+//       collisionDetected = true;
+//       break;
+//     }
+//   }
+//    if (collisionDetected) {
+//     console.log("Collision detected!");
+//     spaceship.material.color.set(0xff0000); //spaceship color will change to red if there is a collision detected
+//   } else {
+//     spaceship.material.color.set(0x00ff00); //will stay the same color (green)
+//   }
+// }
+//  return scene;
+// }
 
 
 

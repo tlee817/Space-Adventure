@@ -94,8 +94,6 @@ function animate() {
     }
 
     renderer.render(activeScene, camera);
-
-    scene3FlightSimulationUpdate();
 }
 
 animate();
