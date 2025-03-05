@@ -148,6 +148,22 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
     boosterEngine.add(stabilityWings);
 
 
+    // add the flame to the boosterEngine
+    // 6 looks good
+    // 0 is fine
+    const flameTexture = new THREE.TextureLoader().load(flametextures[6]);
+    flameTexture.wrapS = THREE.RepeatWrapping;
+    flameTexture.wrapT = THREE.RepeatWrapping;
+
+    const flame = new THREE.ConeGeometry(0.8, 2, 32);
+    const flameMaterial = new THREE.MeshBasicMaterial({ map: flameTexture, transparent: true, opacity: 0.7 });
+    const flameMesh = new THREE.Mesh(flame, flameMaterial);
+    flameMesh.position.set(0, -2.2, 0);
+    flameMesh.rotation.x = Math.PI; // rotate the flame to point downwards
+    
+    boosterEngine.add(flameMesh);
+
+
     // scene.add(noseCone);
     // scene.add(boosterEngine);
     // scene.add(stabilityWings);
