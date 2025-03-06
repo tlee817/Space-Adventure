@@ -40,7 +40,7 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   // pointLight.position.set(0, 0, 0);
   // scene.add(pointLight);
 
-
+  let gameComplete = false;
 
   const spaceShipTexture = new THREE.TextureLoader().load(textures[2]);
   spaceShipTexture.wrapS = THREE.RepeatWrapping;
@@ -263,27 +263,31 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
 
   let velocityY = 0;
 
+  let gameOverAlerted = false;
+
   function animate()
   {
     requestAnimationFrame(animate);
 
+    if (!gameComplete && !gameOverAlerted)
+    {
     // Get the elapsed time
     let elapsedTime = timer.getElapsedTime();
     updateFlameEffect(elapsedTime);
 
 
-      // keep the rocket falling
-      deltaRocketY = rocket.position.y - prevRocketYPosition;
-      velocityY -= acceleration;
-      rocket.position.y += velocityY - 0.13; //-= gameScale*0.05 + acceleration - deltaRocketY ** 2;
-      prevRocketYPosition = rocket.position.y;
+    // keep the rocket falling
+    deltaRocketY = rocket.position.y - prevRocketYPosition;
+    velocityY -= acceleration;
+    rocket.position.y += velocityY - 0.13; //-= gameScale*0.05 + acceleration - deltaRocketY ** 2;
+    prevRocketYPosition = rocket.position.y;
     
 
 
 
-    // flow the pipes and rings to the left
     if (!pausePipeFlow)
     {
+      // flow the pipes and rings to the left
       for (let i = 0; i < upperPipes.length; i++)
       {
         upperPipes[i].position.x -= gameScale*0.05;
@@ -293,7 +297,7 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
     }
 
 
-    // oscillate the pipes up and down a small amount at a rate of 1/6 hz
+    // oscillate the pipes up and down a small amount
     const pipeOscFreq = 0.5;
     const pipeOscAmpl = 0.005;
     const ringOscFreq = 1.0;
@@ -307,11 +311,40 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
     }
     
 
+
+    // check if the rocket fell of the map
+    if (rocket.position.y < -10 || rocket.position.y > 10 && !gameOverAlerted)
+    {
+      gameOver();
+      alert("Game Over!");
+      gameOverAlerted = true;
+      //return;
+    }
+
+
+    // check if rocket.position.x is past the last marker
+    if (rocket.position.x > (lowerPipes[9].position.x + 5))
+    {
+      // done! Game complete!
+      gameComplete = true;
+      alert("Winner! Thanks for playing!");
+    }
     
+
+    }
+
 
     renderer.render(scene, camera);
  }
  animate();
+
+ function gameOver()
+ {
+  // while (scene.children.length > 0)
+  // {
+  //   scene.remove(scene.children[0]);
+  // }
+ }
 
 
   const redPlanetTexture = new THREE.TextureLoader().load('../assets/red.jpg');
@@ -376,39 +409,73 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
 
    // Event listeners for movement using arrow keys
   document.addEventListener('keydown', (event) => {
-    switch (event.key) {
-      case 'ArrowUp': velocityY = gameScale * moveSpeed; //rocket.position.y += gameScale*moveSpeed;
-      break;
-      case 'ArrowDown': //rocket.position.y -= gameScale*moveSpeed;
-      break;
-      case 'ArrowLeft':
-                        pausePipeFlow = true;
-                        break;
+    if (!gameComplete)
+    {
+      switch (event.key) {
+        case 'ArrowUp': 
+        velocityY = gameScale * moveSpeed;
+        break;
+        case 'ArrowDown':
+        break;
+        case 'ArrowLeft':
+                          pausePipeFlow = true;
+                          break;
 
-      case 'ArrowRight':
-                         pausePipeFlow = false; break;
-      case ' ' :
-              velocityY = gameScale * moveSpeed; 
-              break;
+        case 'ArrowRight':
+                          pausePipeFlow = false; break;
+        case ' ' :
+                velocityY = gameScale * moveSpeed; 
+                break;
+      }
+
+      checkCollision();
     }
-    checkCollision();
   });
    // Function to check for collisions
   function checkCollision()
   {
-    const planets = [planet1, planet2];
+    //const planets = [planet1, planet2];
     let collisionDetected = false;
-    for (let planet of planets) // change planet to obstacle
+
+    // for (let planet of planets) // change planet to obstacle
+    // {
+    //   let distancey = Math.abs(rocket.position.y - planet.position.y);
+    //   let distancex = Math.abs(rocket.position.x - planet.position.x);
+    //   let distance = Math.sqrt(distancex*distancex + distancey*distancey);
+    //   if (distance < (sphereRadius + noseConeHeight) && distancex < (sphereRadius + boosterEngineWidth))
+    //   {
+    //     collisionDetected = true;
+    //     break;
+    //   }
+    // }
+
+    const collisionDistance = 2.0;
+    for (let i = 0; i < upperPipes.length; ++i)
     {
-      let distancey = Math.abs(rocket.position.y - planet.position.y);
-      let distancex = Math.abs(rocket.position.x - planet.position.x);
-      let distance = Math.sqrt(distancex*distancex + distancey*distancey);
-      if (distance < (sphereRadius + noseConeHeight) && distancex < (sphereRadius + boosterEngineWidth))
+      let distanceX = Math.abs(rocket.position.x - upperPipes[i].position.x);
+      let distanceY = Math.abs(rocket.position.y - upperPipes[i].position.y);
+      if (distanceX < collisionDistance && distanceY < (collisionDistance + 2)) 
       {
         collisionDetected = true;
         break;
       }
+      distanceX = Math.abs(rocket.position.x - lowerPipes[i].position.x);
+      distanceY = Math.abs(rocket.position.y - lowerPipes[i].position.y);
+      if (distanceX < collisionDistance && distanceY < (collisionDistance + 2))
+      {
+        collisionDetected = true;
+        break;
+      }
+      distanceX = Math.abs(rocket.position.x - rings[i].position.x);
+      distanceY = Math.abs(rocket.position.y - rings[i].position.y);
+      if (distanceX < collisionDistance && distanceY < (collisionDistance + 2))
+      {
+        collisionDetected = true;
+        break;
+      }
+
     }
+    
      if (collisionDetected) {
       console.log("Collision detected!");
       // rocket turns red on collision
