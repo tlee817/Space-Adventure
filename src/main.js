@@ -27,7 +27,7 @@ const { scene: scene1, main_hub_planet, main_hub_spaceship } = createScene1(rend
 const scene2 = createScene2(renderer, camera);
 const scene3 = createScene3();
 
-let activeScene = scene1;
+let activeScene = scene3;
 
 // Click
 const raycaster = new THREE.Raycaster();

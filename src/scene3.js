@@ -23,8 +23,13 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   directionalLight.position.set(5, 10, 7.5);
   scene.add(directionalLight);
 
-  // const ambientLight = new THREE.AmbientLight(0x404040, 0.5); // soft white light
-  // scene.add(ambientLight);
+  const ambientLight = new THREE.AmbientLight(0x404040, 10.0); // soft white light
+  scene.add(ambientLight);
+
+  const directionalLight2 = new THREE.DirectionalLight(0xffffff, 1);
+  directionalLight2.position.set(-10, 0, -1);
+  directionalLight2.target.position.set(100, 0, 1);
+  scene.add(directionalLight2);
 
   // const pointLight = new THREE.PointLight(0xffffff, 1, 100);
   // pointLight.position.set(0, 0, 0);
@@ -36,18 +41,18 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   spaceShipTexture.wrapS = THREE.RepeatWrapping;
   spaceShipTexture.wrapT = THREE.RepeatWrapping;
 
-  let noseCone = new THREE.Mesh( new THREE.ConeGeometry(1, 2, 128), new THREE.MeshStandardMaterial({ map: spaceShipTexture, roughness: 0.5, metalness: 1.0 })); //color: 0xffffff }));
-  const noseConeHeight = 2.2;
+  let noseCone = new THREE.Mesh( new THREE.ConeGeometry(0.8, 1.5, 128), new THREE.MeshStandardMaterial({ map: spaceShipTexture, roughness: 0.3, metalness: 1.0 })); //color: 0xffffff }));
+  const noseConeHeight = 2.25;
   noseCone.position.set(0, noseConeHeight, 0);
 
   const boosterEngineWidth = 0.8;
-  let boosterEngine = new THREE.Mesh( new THREE.CylinderGeometry(boosterEngineWidth, 0.8, 3), new THREE.MeshStandardMaterial({ map: spaceShipTexture, roughness: 0.5, metalness: 1.0 }));//THREE.MeshBasicMaterial({ color: 0xffffff }));
+  let boosterEngine = new THREE.Mesh( new THREE.CylinderGeometry(boosterEngineWidth, 0.8, 3), new THREE.MeshStandardMaterial({ map: spaceShipTexture, roughness: 0.3, metalness: 1.0 }));//THREE.MeshBasicMaterial({ color: 0xffffff }));
   boosterEngine.position.set(-8, -2.2, 0);
 
   const wingStabilityVertices = new Float32Array([
-  0,  3.2, 0, // Top
-  -1.5, -1.5, 0, // lower left
-  1.5, -1.5, 0  // lower right
+  0,  2.2, 0, // Top
+  -1.8, -1.5, 0, // lower left
+  1.8, -1.5, 0  // lower right
  ]);
 
   const wingsGeoBuffer = new THREE.BufferGeometry();
@@ -89,7 +94,8 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   // boosterEngine combo alias:
   const rocket = boosterEngine;
   scene.add(rocket);
-  rocket.position.set(0, 0, -40);
+  rocket.position.set(0, 0, 0);//-10, -40);
+  rocket.scale.set(0.35, 0.35, 0.35);
 
 
 
@@ -101,28 +107,155 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
 
  let timer = new THREE.Clock();
 
-  function animate() {
-   requestAnimationFrame(animate);
 
-
-  // Get the elapsed time
-  let elapsedTime = timer.getElapsedTime();
-
+ function updateFlameEffect(elapsedTime) {
   // controls the flicker of the flame
   flameMesh.material.opacity = 1.0 - Math.sin(elapsedTime * 50)/6;
-
   // controls the rate of the up and down flame movement
-  const scaleY = 1.5 + 0.2 * Math.sin(elapsedTime * 100);
+  const scaleY = 1.5 + 0.3 * Math.sin(elapsedTime * 100);
   flameMesh.scale.y = scaleY;
   flameMesh.position.y = -2.2 - (scaleY - 1);
   flameMesh.rotation.y = flameMesh.rotation.y + 3; // rotate the flame for added realism
+ }
+
+
+
+ // setup obstancles
+ const obstacles = [];
+  //const obstacleCount = 10;
+  // const obstacleGeometry = new THREE.SphereGeometry(2, 32, 32);
+  // const obstacleMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
+  // for (let i = 0; i < obstacleCount; i++) {
+  //   const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
+  //   obstacle.position.set(Math.random() * 20 - 10, Math.random() * 20 - 10, Math.random() * 20 - 10);
+  //   obstacles.push(obstacle);
+  //   scene.add(obstacle);
+  // }
+
+  // add a series of pipes and slits that the rocket must navigate through
+  const gameScale = 0.35;
+  //const pipe1Locationx = 5;
+  //const pipe1Locationy = 7;
+  
+  const pipeTexture = new THREE.TextureLoader().load('../assets/pipetex3.jpg');
+  pipeTexture.wrapS = THREE.RepeatWrapping;
+  pipeTexture.wrapT = THREE.RepeatWrapping;
+  pipeTexture.repeat.rotateAround(0.5, 0.5, Math.PI / 2);
+
+  const pipeCapTexture = new THREE.TextureLoader().load('../assets/pipetex3.jpg');
+  pipeCapTexture.wrapS = THREE.RepeatWrapping;
+  pipeCapTexture.wrapT = THREE.RepeatWrapping;
+  pipeCapTexture.repeat.rotateAround(0.5, 0.5, Math.PI / 2);
+
+  const pipeGeometry = new THREE.CylinderGeometry(gameScale*2, gameScale*2, gameScale*20, 32);
+  pipeGeometry.rotateY(Math.PI / 2);
+  const pipeMaterial = new THREE.MeshStandardMaterial({ map: pipeTexture, roughness: 0.3, metalness: 1.0 });
+
+  const HIGH_SIDE = 7;
+  const LOW_SIDE = -10;
+  let pipeLocationx = 5;
+  let upperPipes = [];
+  let lowerPipes = [];
+  let rings = [];
+
+  for (let i = 0; i < 10; i++)
+  {
+    let upperPipe = new THREE.Mesh(pipeGeometry, pipeMaterial);
+    let upperPipeLocation = HIGH_SIDE - 2 * Math.random();
+    upperPipe.position.set(pipeLocationx, upperPipeLocation, 0);
+
+    let pipeCapGeometry = new THREE.CylinderGeometry(gameScale*2.6, gameScale*2.6, gameScale*2, 32);
+    let pipeCapMaterial = new THREE.MeshStandardMaterial({ map: pipeCapTexture, roughness: 0.3, metalness: 1.0 });
+    let upperPipeCap = new THREE.Mesh(pipeCapGeometry, pipeCapMaterial);
+    upperPipe.add(upperPipeCap);
+
+    upperPipeCap.position.set(0, -3.5, 0);
+    //upperPipeCap.rotation.y = Math.PI;
+    
+    let lowerPipe = new THREE.Mesh(pipeGeometry, pipeMaterial);
+    lowerPipe.position.set(pipeLocationx, LOW_SIDE + 2 * Math.random(), 0);
+    lowerPipe.rotation.y = Math.PI;
+
+    let lowerPipeCap = new THREE.Mesh(pipeCapGeometry, pipeCapMaterial);
+    lowerPipe.add(lowerPipeCap);
+    lowerPipeCap.position.set(0, 3.5, 0);
+    
+
+    let ring = new THREE.Mesh(new THREE.TorusGeometry(2, 0.5, 16, 100), new THREE.MeshStandardMaterial({ map: pipeTexture, roughness: 0.5, metalness: 1.0 }));
+    let ringSide = LOW_SIDE;
+    if (Math.random() > 0.5)
+    {
+      ringSide = HIGH_SIDE;
+    }
+    ring.position.set(pipeLocationx, ringSide / 2, 0);
+    ring.rotation.x = Math.PI / 2;
+    // store the high or low result in the ring
+    ring.userData.positionType = ringSide === HIGH_SIDE ? "high" : "low";
+
+
+    pipeLocationx += (5 + Math.random());
+
+    upperPipes.push(upperPipe);
+    lowerPipes.push(lowerPipe);
+    rings.push(ring);
+    scene.add(lowerPipe);
+    scene.add(upperPipe);
+    scene.add(ring);
+
+
+    // const slitGeometry = new THREE.BoxGeometry(gameScale*4, gameScale*4, gameScale*4);
+    // const slitMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff });
+    // const slit = new THREE.Mesh(slitGeometry, slitMaterial);
+    // slit.position.set(pipe1Locationx + 2.5 + i * 5, 0, 0);
+    // scene.add(slit);
+    // obstacles.push(slit);
+  }
+
+
+  // add some ring obstacles
+  // const ringGeometry = new THREE.TorusGeometry(2, 0.5, 16, 100);
+  // const ringMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+  // const ring = new THREE.Mesh(ringGeometry, ringMaterial);
+  // ring.position.set(0, 0, 0);
+  // ring.rotation.x = Math.PI / 2;
+  // scene.add(ring);
+  // obstacles.push(ring);
+
+
+
+
+
+
+
+  
+  // const slitGeometry = new THREE.BoxGeometry(gameScale*4, gameScale*4, gameScale*4);
+  // const slitMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff });
+  // const slit = new THREE.Mesh(slitGeometry, slitMaterial);
+  // slit.position.set(0, 0, 0);
+  // scene.add(slit);
+
   
 
 
 
-   renderer.render(scene, camera);
+
+  function animate()
+  {
+    requestAnimationFrame(animate);
+
+
+    // Get the elapsed time
+    let elapsedTime = timer.getElapsedTime();
+    updateFlameEffect(elapsedTime);
+
+
+
+
+
+    renderer.render(scene, camera);
  }
  animate();
+
 
   const redPlanetTexture = new THREE.TextureLoader().load('../assets/red.jpg');
   redPlanetTexture.wrapS = THREE.RepeatWrapping;
@@ -130,7 +263,7 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   const redPlanetGeo = new THREE.SphereGeometry(2, 300, 900);
   const redPlanetMat = new THREE.MeshStandardMaterial({ map: redPlanetTexture, roughness: 0.5, metalness: 0.3 });
   const planet1 = new THREE.Mesh(redPlanetGeo, redPlanetMat);
-  planet1.position.set(100, -20, -600);
+  planet1.position.set(100, -60, -600);
   planet1.scale.set(20, 20, 20);
   scene.add(planet1);
   
@@ -141,7 +274,7 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   const bluePlanetGeo = new THREE.SphereGeometry(2, 300, 900);
   const bluePlanetMat = new THREE.MeshStandardMaterial({ map: bluePlanetTexture, roughness: 0.5, metalness: 0.3 });
   const planet2 = new THREE.Mesh(bluePlanetGeo, bluePlanetMat);
-  planet2.position.set(-100, 20, -600);
+  planet2.position.set(-100, -120, -600);
   planet2.scale.set(20, 20, 20);
   scene.add(planet2);
 
@@ -161,7 +294,7 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
       for (let i = 0; i < 5000; i++) { 
           const x = (Math.random() - 0.5) * 2000; 
           const y = (Math.random() - 0.5) * 2000; 
-          const z = (Math.random() - 0.5) * 100 - 700;
+          const z = Math.min((Math.random() - 0.5) * 900 - 700, -700);
           starVertices.push(x, y, z);
       }
   
@@ -177,14 +310,14 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   scene.add(distantStars);
 
 
-  const group = new THREE.Group();
-  //group.add(boosterEngine);
-
-  scene.add(group);
-  group.add(planet1);
-  group.add(planet2);
-  group.add(distantStars);
-  group.add(rocket);
+  // group everything together except the obstacles
+  // const rocketGroup = new THREE.Group();
+  // //group.add(boosterEngine);
+  // scene.add(rocketGroup);
+  // rocketGroup.add(planet1);
+  // rocketGroup.add(planet2);
+  // rocketGroup.add(distantStars);
+  // rocketGroup.add(rocket);
 
 
 
@@ -194,10 +327,10 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
    // Event listeners for movement using arrow keys
   document.addEventListener('keydown', (event) => {
     switch (event.key) {
-      case 'ArrowUp': rocket.position.y += moveSpeed; break;
-      case 'ArrowDown': rocket.position.y -= moveSpeed; break;
-      case 'ArrowLeft': rocket.position.x -= moveSpeed; break;
-      case 'ArrowRight': rocket.position.x += moveSpeed; break;
+      case 'ArrowUp': rocket.position.y += gameScale*moveSpeed; break;
+      case 'ArrowDown': rocket.position.y -= gameScale*moveSpeed; break;
+      case 'ArrowLeft': rocket.position.x -= gameScale*moveSpeed; break;
+      case 'ArrowRight': rocket.position.x += gameScale*moveSpeed; break;
     }
     checkCollision();
   });
@@ -206,7 +339,7 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   {
     const planets = [planet1, planet2];
     let collisionDetected = false;
-    for (let planet of planets) 
+    for (let planet of planets) // change planet to obstacle
     {
       let distancey = Math.abs(rocket.position.y - planet.position.y);
       let distancex = Math.abs(rocket.position.x - planet.position.x);
