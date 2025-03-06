@@ -194,7 +194,8 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
     ring.position.set(pipeLocationx, ringSide / 2, 0);
     ring.rotation.x = Math.PI / 2;
     // store the high or low result in the ring
-    ring.userData.positionType = ringSide === HIGH_SIDE ? "high" : "low";
+    //ring.userData.positionType = ringSide === HIGH_SIDE ? "HIGH_SIDE" : "LOW_SIDE";
+    ring.userData.positionType = ringSide === HIGH_SIDE ? HIGH_SIDE : LOW_SIDE;
 
 
     pipeLocationx += (5 + Math.random());
@@ -238,6 +239,17 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   // slit.position.set(0, 0, 0);
   // scene.add(slit);
 
+
+  let upperPhases = [];
+  let lowerPhases = [];
+  let ringPhases = [];
+  for (let i = 0; i < upperPipes.length; i++)
+  {
+    upperPhases.push(Math.random() * Math.PI);
+    lowerPhases.push(Math.random() * Math.PI);
+    ringPhases.push(Math.random() * Math.PI);
+  }
+
   
   // angle the rocket
   rocket.rotateZ(-0.8);
@@ -279,6 +291,21 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
              rings[i].position.x -= gameScale*0.05;
       }
     }
+
+
+    // oscillate the pipes up and down a small amount at a rate of 1/6 hz
+    const pipeOscFreq = 0.5;
+    const pipeOscAmpl = 0.005;
+    const ringOscFreq = 1.0;
+    const ringOscAmpl = 0.01;
+    for (let i = 0; i < upperPipes.length; i++)
+    {
+      upperPipes[i].position.y += pipeOscAmpl * Math.sin(elapsedTime * pipeOscFreq - upperPhases[i]);
+      lowerPipes[i].position.y += pipeOscAmpl * Math.sin(elapsedTime * pipeOscFreq - lowerPhases[i]);
+      
+      rings[i].position.y += ringOscAmpl * Math.sin(elapsedTime * ringOscFreq - ringPhases[i]);
+    }
+    
 
     
 
@@ -346,11 +373,6 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
    let moveSpeed = 0.5;//0.3;
   const sphereRadius = 2;//both planets right now have the radius of 2
 
-// document.addEventListener('keyup', (event) => {
-//     switch (event.key) {
-//       case 'ArrowLeft':       pausePipeFlow = false; break;
-//     }
-// })
 
    // Event listeners for movement using arrow keys
   document.addEventListener('keydown', (event) => {
@@ -400,5 +422,10 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
       stabilityWings.material.color.set(0x4293f5);
     }
   }
+
+  // provide an initial impulse
+  const spacebarEvent = new KeyboardEvent('keydown', { key: ' ', code: "Space", keyCode: 32, which: 32});
+  document.dispatchEvent(spacebarEvent);
+
    return scene;
 }
