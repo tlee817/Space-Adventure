@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+//import { createStarField } from './scene1';
 
 export function createScene3() {
   const scene = new THREE.Scene();
@@ -35,7 +36,7 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   spaceShipTexture.wrapS = THREE.RepeatWrapping;
   spaceShipTexture.wrapT = THREE.RepeatWrapping;
 
-  let noseCone = new THREE.Mesh( new THREE.ConeGeometry(1, 2, 32), new THREE.MeshStandardMaterial({ map: spaceShipTexture, roughness: 0.5, metalness: 1.0 })); //color: 0xffffff }));
+  let noseCone = new THREE.Mesh( new THREE.ConeGeometry(1, 2, 128), new THREE.MeshStandardMaterial({ map: spaceShipTexture, roughness: 0.5, metalness: 1.0 })); //color: 0xffffff }));
   const noseConeHeight = 2.2;
   noseCone.position.set(0, noseConeHeight, 0);
 
@@ -73,11 +74,12 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   flameTexture.wrapS = THREE.RepeatWrapping;
   flameTexture.wrapT = THREE.RepeatWrapping;
 
-  const flame = new THREE.ConeGeometry(0.8, 2, 32);
+  const flame = new THREE.ConeGeometry(0.7, 2, 32);
   const flameMaterial = new THREE.MeshBasicMaterial({ map: flameTexture, transparent: true, opacity: 0.7 });
   const flameMesh = new THREE.Mesh(flame, flameMaterial);
   flameMesh.position.set(0, -2.2, 0);
   flameMesh.rotation.x = Math.PI; // rotate the flame to point downwards
+  //flameMesh.rotation.y = Math.PI;
   
   // assemble the spaceship...  
   boosterEngine.add(noseCone);
@@ -87,6 +89,7 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   // boosterEngine combo alias:
   const rocket = boosterEngine;
   scene.add(rocket);
+  rocket.position.set(0, 0, -40);
 
 
 
@@ -109,10 +112,11 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   flameMesh.material.opacity = 1.0 - Math.sin(elapsedTime * 50)/6;
 
   // controls the rate of the up and down flame movement
-  flameMesh.scale.y = 1 + 0.1 * Math.sin(elapsedTime * 100);
-  flameMesh.position.y = flameMesh.position.y + 0.01 * Math.sin(elapsedTime * 100);
-
-
+  const scaleY = 1.5 + 0.2 * Math.sin(elapsedTime * 100);
+  flameMesh.scale.y = scaleY;
+  flameMesh.position.y = -2.2 - (scaleY - 1);
+  flameMesh.rotation.y = flameMesh.rotation.y + 3; // rotate the flame for added realism
+  
 
 
 
@@ -123,21 +127,66 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   const redPlanetTexture = new THREE.TextureLoader().load('../assets/red.jpg');
   redPlanetTexture.wrapS = THREE.RepeatWrapping;
   redPlanetTexture.wrapT = THREE.RepeatWrapping;
-  const redPlanetGeo = new THREE.SphereGeometry(2, 16, 16);
-  const redPlanetMat = new THREE.MeshStandardMaterial({ map: redPlanetTexture, roughness: 0.5, metalness: 1.0 });
+  const redPlanetGeo = new THREE.SphereGeometry(2, 300, 900);
+  const redPlanetMat = new THREE.MeshStandardMaterial({ map: redPlanetTexture, roughness: 0.5, metalness: 0.3 });
   const planet1 = new THREE.Mesh(redPlanetGeo, redPlanetMat);
-  planet1.position.set(3, 0, 0);
+  planet1.position.set(100, -20, -600);
+  planet1.scale.set(20, 20, 20);
   scene.add(planet1);
   
    // Create the second planet
   const bluePlanetTexture = new THREE.TextureLoader().load('../assets/blue_orange.png');
   bluePlanetTexture.wrapS = THREE.RepeatWrapping;
   bluePlanetTexture.wrapT = THREE.RepeatWrapping;
-  const bluePlanetGeo = new THREE.SphereGeometry(2, 16, 16);
-  const bluePlanetMat = new THREE.MeshStandardMaterial({ map: bluePlanetTexture, roughness: 0.5, metalness: 1.0 });
+  const bluePlanetGeo = new THREE.SphereGeometry(2, 300, 900);
+  const bluePlanetMat = new THREE.MeshStandardMaterial({ map: bluePlanetTexture, roughness: 0.5, metalness: 0.3 });
   const planet2 = new THREE.Mesh(bluePlanetGeo, bluePlanetMat);
-  planet2.position.set(-3, 2, 0);
+  planet2.position.set(-100, 20, -600);
+  planet2.scale.set(20, 20, 20);
   scene.add(planet2);
+
+
+  scene.fog = new THREE.Fog(0x000000, 50, 900);
+
+  function createDistantStarField() {
+      const starGeometry = new THREE.BufferGeometry();
+      const starMaterial = new THREE.PointsMaterial({
+          color: 0xffffff,
+          size: 1, 
+          transparent: true,
+          fog: false
+      });
+  
+      const starVertices = [];
+      for (let i = 0; i < 5000; i++) { 
+          const x = (Math.random() - 0.5) * 2000; 
+          const y = (Math.random() - 0.5) * 2000; 
+          const z = (Math.random() - 0.5) * 100 - 700;
+          starVertices.push(x, y, z);
+      }
+  
+      starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+      const stars = new THREE.Points(starGeometry, starMaterial);
+      stars.userData.isStarField = true;
+      return stars;
+  }
+  
+
+
+  const distantStars = createDistantStarField();
+  scene.add(distantStars);
+
+
+  const group = new THREE.Group();
+  //group.add(boosterEngine);
+
+  scene.add(group);
+  group.add(planet1);
+  group.add(planet2);
+  group.add(distantStars);
+  group.add(rocket);
+
+
 
    camera.position.z = 10;
    let moveSpeed = 0.3;
