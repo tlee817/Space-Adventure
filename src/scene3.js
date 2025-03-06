@@ -31,6 +31,11 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   directionalLight2.target.position.set(100, 0, 1);
   scene.add(directionalLight2);
 
+  // const directionalLight3 = new THREE.DirectionalLight(0xffffff, 1);
+  // directionalLight3.position.set(20, 50, -5);
+  // directionalLight3.target.position.set(20, -10, 5);
+  // scene.add(directionalLight3);
+
   // const pointLight = new THREE.PointLight(0xffffff, 1, 100);
   // pointLight.position.set(0, 0, 0);
   // scene.add(pointLight);
@@ -100,7 +105,7 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
 
 
   window.addEventListener("keydown", function(event) {
-   if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
+   if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(event.key)) {
      event.preventDefault();
    }
  });
@@ -148,7 +153,6 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   pipeCapTexture.repeat.rotateAround(0.5, 0.5, Math.PI / 2);
 
   const pipeGeometry = new THREE.CylinderGeometry(gameScale*2, gameScale*2, gameScale*20, 32);
-  pipeGeometry.rotateY(Math.PI / 2);
   const pipeMaterial = new THREE.MeshStandardMaterial({ map: pipeTexture, roughness: 0.3, metalness: 1.0 });
 
   const HIGH_SIDE = 7;
@@ -181,7 +185,7 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
     lowerPipeCap.position.set(0, 3.5, 0);
     
 
-    let ring = new THREE.Mesh(new THREE.TorusGeometry(2, 0.5, 16, 100), new THREE.MeshStandardMaterial({ map: pipeTexture, roughness: 0.5, metalness: 1.0 }));
+    let ring = new THREE.Mesh(new THREE.TorusGeometry(2, 0.5, 16, 100), new THREE.MeshStandardMaterial({ map: pipeTexture, roughness: 0.3, metalness: 1.0 }));
     let ringSide = LOW_SIDE;
     if (Math.random() > 0.5)
     {
@@ -235,22 +239,48 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   // scene.add(slit);
 
   
+  // angle the rocket
+  rocket.rotateZ(-0.8);
 
 
+  let pausePipeFlow = false;
 
+  let prevRocketYPosition = rocket.position.y;
+  let deltaRocketY = 0;
+  let acceleration = 0.001;
+
+  let velocityY = 0;
 
   function animate()
   {
     requestAnimationFrame(animate);
-
 
     // Get the elapsed time
     let elapsedTime = timer.getElapsedTime();
     updateFlameEffect(elapsedTime);
 
 
+      // keep the rocket falling
+      deltaRocketY = rocket.position.y - prevRocketYPosition;
+      velocityY -= acceleration;
+      rocket.position.y += velocityY - 0.13; //-= gameScale*0.05 + acceleration - deltaRocketY ** 2;
+      prevRocketYPosition = rocket.position.y;
+    
 
 
+
+    // flow the pipes and rings to the left
+    if (!pausePipeFlow)
+    {
+      for (let i = 0; i < upperPipes.length; i++)
+      {
+        upperPipes[i].position.x -= gameScale*0.05;
+        lowerPipes[i].position.x -= gameScale*0.05;
+             rings[i].position.x -= gameScale*0.05;
+      }
+    }
+
+    
 
     renderer.render(scene, camera);
  }
@@ -310,27 +340,34 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   scene.add(distantStars);
 
 
-  // group everything together except the obstacles
-  // const rocketGroup = new THREE.Group();
-  // //group.add(boosterEngine);
-  // scene.add(rocketGroup);
-  // rocketGroup.add(planet1);
-  // rocketGroup.add(planet2);
-  // rocketGroup.add(distantStars);
-  // rocketGroup.add(rocket);
-
 
 
    camera.position.z = 10;
-   let moveSpeed = 0.3;
+   let moveSpeed = 0.5;//0.3;
   const sphereRadius = 2;//both planets right now have the radius of 2
+
+// document.addEventListener('keyup', (event) => {
+//     switch (event.key) {
+//       case 'ArrowLeft':       pausePipeFlow = false; break;
+//     }
+// })
+
    // Event listeners for movement using arrow keys
   document.addEventListener('keydown', (event) => {
     switch (event.key) {
-      case 'ArrowUp': rocket.position.y += gameScale*moveSpeed; break;
-      case 'ArrowDown': rocket.position.y -= gameScale*moveSpeed; break;
-      case 'ArrowLeft': rocket.position.x -= gameScale*moveSpeed; break;
-      case 'ArrowRight': rocket.position.x += gameScale*moveSpeed; break;
+      case 'ArrowUp': velocityY = gameScale * moveSpeed; //rocket.position.y += gameScale*moveSpeed;
+      break;
+      case 'ArrowDown': //rocket.position.y -= gameScale*moveSpeed;
+      break;
+      case 'ArrowLeft':
+                        pausePipeFlow = true;
+                        break;
+
+      case 'ArrowRight':
+                         pausePipeFlow = false; break;
+      case ' ' :
+              velocityY = gameScale * moveSpeed; 
+              break;
     }
     checkCollision();
   });
