@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-//import { createStarField } from './scene1';
 
 export function createScene3() {
   const scene = new THREE.Scene();
@@ -15,7 +14,6 @@ const textures = ['../assets/FuturisticCoating1.jpg', '../assets/FuturisticCoati
 const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../assets/flame3.svg',
   '../assets/flame4.jpg', '../assets/flame5.jpg', '../assets/flame6.webp', '../assets/flame7.jpg',
   '../assets/flame8.avif', '../assets/flame9.jpeg'];
-
 
 
   // Add lighting
@@ -124,23 +122,8 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
  }
 
 
-
- // setup obstancles
- const obstacles = [];
-  //const obstacleCount = 10;
-  // const obstacleGeometry = new THREE.SphereGeometry(2, 32, 32);
-  // const obstacleMaterial = new THREE.MeshStandardMaterial({ color: 0xff0000 });
-  // for (let i = 0; i < obstacleCount; i++) {
-  //   const obstacle = new THREE.Mesh(obstacleGeometry, obstacleMaterial);
-  //   obstacle.position.set(Math.random() * 20 - 10, Math.random() * 20 - 10, Math.random() * 20 - 10);
-  //   obstacles.push(obstacle);
-  //   scene.add(obstacle);
-  // }
-
   // add a series of pipes and slits that the rocket must navigate through
   const gameScale = 0.35;
-  //const pipe1Locationx = 5;
-  //const pipe1Locationy = 7;
   
   const pipeTexture = new THREE.TextureLoader().load('../assets/pipetex3.jpg');
   pipeTexture.wrapS = THREE.RepeatWrapping;
@@ -157,92 +140,72 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
 
   const HIGH_SIDE = 7;
   const LOW_SIDE = -10;
-  let pipeLocationx = 5;
+  
   let upperPipes = [];
   let lowerPipes = [];
   let rings = [];
 
-  for (let i = 0; i < 10; i++)
-  {
-    let upperPipe = new THREE.Mesh(pipeGeometry, pipeMaterial);
-    let upperPipeLocation = HIGH_SIDE - 2 * Math.random();
-    upperPipe.position.set(pipeLocationx, upperPipeLocation, 0);
-
-    let pipeCapGeometry = new THREE.CylinderGeometry(gameScale*2.6, gameScale*2.6, gameScale*2, 32);
-    let pipeCapMaterial = new THREE.MeshStandardMaterial({ map: pipeCapTexture, roughness: 0.3, metalness: 1.0 });
-    let upperPipeCap = new THREE.Mesh(pipeCapGeometry, pipeCapMaterial);
-    upperPipe.add(upperPipeCap);
-
-    upperPipeCap.position.set(0, -3.5, 0);
-    //upperPipeCap.rotation.y = Math.PI;
-    
-    let lowerPipe = new THREE.Mesh(pipeGeometry, pipeMaterial);
-    lowerPipe.position.set(pipeLocationx, LOW_SIDE + 2 * Math.random(), 0);
-    lowerPipe.rotation.y = Math.PI;
-
-    let lowerPipeCap = new THREE.Mesh(pipeCapGeometry, pipeCapMaterial);
-    lowerPipe.add(lowerPipeCap);
-    lowerPipeCap.position.set(0, 3.5, 0);
-    
-
-    let ring = new THREE.Mesh(new THREE.TorusGeometry(2, 0.5, 16, 100), new THREE.MeshStandardMaterial({ map: pipeTexture, roughness: 0.3, metalness: 1.0 }));
-    let ringSide = LOW_SIDE;
-    if (Math.random() > 0.5)
-    {
-      ringSide = HIGH_SIDE;
-    }
-    ring.position.set(pipeLocationx, ringSide / 2, 0);
-    ring.rotation.x = Math.PI / 2;
-    // store the high or low result in the ring
-    //ring.userData.positionType = ringSide === HIGH_SIDE ? "HIGH_SIDE" : "LOW_SIDE";
-    ring.userData.positionType = ringSide === HIGH_SIDE ? HIGH_SIDE : LOW_SIDE;
-
-
-    pipeLocationx += (5 + Math.random());
-
-    upperPipes.push(upperPipe);
-    lowerPipes.push(lowerPipe);
-    rings.push(ring);
-    scene.add(lowerPipe);
-    scene.add(upperPipe);
-    scene.add(ring);
-
-
-    // const slitGeometry = new THREE.BoxGeometry(gameScale*4, gameScale*4, gameScale*4);
-    // const slitMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-    // const slit = new THREE.Mesh(slitGeometry, slitMaterial);
-    // slit.position.set(pipe1Locationx + 2.5 + i * 5, 0, 0);
-    // scene.add(slit);
-    // obstacles.push(slit);
-  }
-
-
-  // add some ring obstacles
-  // const ringGeometry = new THREE.TorusGeometry(2, 0.5, 16, 100);
-  // const ringMaterial = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-  // const ring = new THREE.Mesh(ringGeometry, ringMaterial);
-  // ring.position.set(0, 0, 0);
-  // ring.rotation.x = Math.PI / 2;
-  // scene.add(ring);
-  // obstacles.push(ring);
-
-
-
-
-
-
-
-  
-  // const slitGeometry = new THREE.BoxGeometry(gameScale*4, gameScale*4, gameScale*4);
-  // const slitMaterial = new THREE.MeshStandardMaterial({ color: 0x0000ff });
-  // const slit = new THREE.Mesh(slitGeometry, slitMaterial);
-  // slit.position.set(0, 0, 0);
-  // scene.add(slit);
-
-
   let upperPhases = [];
   let lowerPhases = [];
   let ringPhases = [];
+
+
+  function setupPipesAndRings()
+  {
+    let pipeLocationx = 5;
+
+    for (let i = 0; i < 10; i++)
+    {
+      let upperPipe = new THREE.Mesh(pipeGeometry, pipeMaterial);
+      let upperPipeLocation = HIGH_SIDE - 2 * Math.random();
+      upperPipe.position.set(pipeLocationx, upperPipeLocation, 0);
+  
+      let pipeCapGeometry = new THREE.CylinderGeometry(gameScale*2.6, gameScale*2.6, gameScale*2, 32);
+      let pipeCapMaterial = new THREE.MeshStandardMaterial({ map: pipeCapTexture, roughness: 0.3, metalness: 1.0 });
+      let upperPipeCap = new THREE.Mesh(pipeCapGeometry, pipeCapMaterial);
+      upperPipe.add(upperPipeCap);
+  
+      upperPipeCap.position.set(0, -3.5, 0);
+      
+      let lowerPipe = new THREE.Mesh(pipeGeometry, pipeMaterial);
+      lowerPipe.position.set(pipeLocationx, LOW_SIDE + 2 * Math.random(), 0);
+      lowerPipe.rotation.y = Math.PI;
+  
+      let lowerPipeCap = new THREE.Mesh(pipeCapGeometry, pipeCapMaterial);
+      lowerPipe.add(lowerPipeCap);
+      lowerPipeCap.position.set(0, 3.5, 0);
+      
+  
+      let ring = new THREE.Mesh(new THREE.TorusGeometry(2, 0.5, 16, 100), new THREE.MeshStandardMaterial({ map: pipeTexture, roughness: 0.3, metalness: 1.0 }));
+      let ringSide = LOW_SIDE;
+      if (Math.random() > 0.5)
+      {
+        ringSide = HIGH_SIDE;
+      }
+      ring.position.set(pipeLocationx, ringSide / 2, 0);
+      ring.rotation.x = Math.PI / 2;
+      // store the high or low result in the ring
+      ring.userData.positionType = ringSide === HIGH_SIDE ? HIGH_SIDE : LOW_SIDE;
+  
+  
+      pipeLocationx += (5 + Math.random());
+  
+      upperPipes.push(upperPipe);
+      lowerPipes.push(lowerPipe);
+      rings.push(ring);
+      scene.add(lowerPipe);
+      scene.add(upperPipe);
+      scene.add(ring);
+  
+    }
+  }
+
+
+
+  setupPipesAndRings();
+
+  
+
   for (let i = 0; i < upperPipes.length; i++)
   {
     upperPhases.push(Math.random() * Math.PI);
@@ -265,6 +228,8 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
 
   let gameOverAlerted = false;
 
+
+
   function animate()
   {
     requestAnimationFrame(animate);
@@ -282,8 +247,6 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
     rocket.position.y += velocityY - 0.13; //-= gameScale*0.05 + acceleration - deltaRocketY ** 2;
     prevRocketYPosition = rocket.position.y;
     
-
-
 
     if (!pausePipeFlow)
     {
@@ -312,10 +275,10 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
     
 
 
-    // check if the rocket fell of the map
+    // check if the rocket fell off the map
     if (rocket.position.y < -10 || rocket.position.y > 10 && !gameOverAlerted)
     {
-      gameOver();
+      //gameOver();
       alert("Game Over!");
       gameOverAlerted = true;
       //return;
@@ -330,6 +293,7 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
       alert("Winner! Thanks for playing!");
     }
     
+    checkCollision();
 
     }
 
@@ -338,13 +302,13 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
  }
  animate();
 
- function gameOver()
- {
-  // while (scene.children.length > 0)
-  // {
-  //   scene.remove(scene.children[0]);
-  // }
- }
+//  function gameOver()
+//  {
+//   // while (scene.children.length > 0)
+//   // {
+//   //   scene.remove(scene.children[0]);
+//   // }
+//  }
 
 
   const redPlanetTexture = new THREE.TextureLoader().load('../assets/red.jpg');
@@ -395,6 +359,7 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
   }
   
 
+  let collisionCounter = 0;
 
   const distantStars = createDistantStarField();
   scene.add(distantStars);
@@ -431,44 +396,36 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
       checkCollision();
     }
   });
+
+let collisionTime = 0;
+
+
    // Function to check for collisions
   function checkCollision()
   {
     //const planets = [planet1, planet2];
     let collisionDetected = false;
 
-    // for (let planet of planets) // change planet to obstacle
-    // {
-    //   let distancey = Math.abs(rocket.position.y - planet.position.y);
-    //   let distancex = Math.abs(rocket.position.x - planet.position.x);
-    //   let distance = Math.sqrt(distancex*distancex + distancey*distancey);
-    //   if (distance < (sphereRadius + noseConeHeight) && distancex < (sphereRadius + boosterEngineWidth))
-    //   {
-    //     collisionDetected = true;
-    //     break;
-    //   }
-    // }
-
-    const collisionDistance = 2.0;
+    const collisionDistance = 1.5;
     for (let i = 0; i < upperPipes.length; ++i)
     {
       let distanceX = Math.abs(rocket.position.x - upperPipes[i].position.x);
       let distanceY = Math.abs(rocket.position.y - upperPipes[i].position.y);
-      if (distanceX < collisionDistance && distanceY < (collisionDistance + 2)) 
+      if (distanceX < collisionDistance && rocket.position.y > (upperPipes[i].position.y - 4.0)) //distanceY < (collisionDistance - 2 )) 
       {
         collisionDetected = true;
         break;
       }
       distanceX = Math.abs(rocket.position.x - lowerPipes[i].position.x);
       distanceY = Math.abs(rocket.position.y - lowerPipes[i].position.y);
-      if (distanceX < collisionDistance && distanceY < (collisionDistance + 2))
+      if (distanceX < collisionDistance && rocket.position.y < (lowerPipes[i].position.y + 4.5)) //distanceY < (collisionDistance - 2))
       {
         collisionDetected = true;
         break;
       }
       distanceX = Math.abs(rocket.position.x - rings[i].position.x);
       distanceY = Math.abs(rocket.position.y - rings[i].position.y);
-      if (distanceX < collisionDistance && distanceY < (collisionDistance + 2))
+      if (distanceX < 2.0 && distanceY < 1)
       {
         collisionDetected = true;
         break;
@@ -479,15 +436,51 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
      if (collisionDetected) {
       console.log("Collision detected!");
       // rocket turns red on collision
+
+      if (collisionTime == 0.0)
+      {
+        ++collisionCounter;
+        collisionTime = timer.getElapsedTime();
+      }
+
+      if ((timer.getElapsedTime() - collisionTime) > 2) // 2 second break after collision
+      {
+        ++collisionCounter;
+      }        
+
       rocket.material.color.set(0xff0000);
       noseCone.material.color.set(0xff0000);
       stabilityWings.material.color.set(0xff0000);
+
+      if (collisionCounter >= 2)
+      {
+        collisionCounter = 0;
+        deleteAllPipesAndRings();
+        setupPipesAndRings();
+        collisionTime = 0.0;
+      }
     } else {
       // reset back to normal color
       rocket.material.color.set(0xffffff);
       noseCone.material.color.set(0xffffff);
       stabilityWings.material.color.set(0x4293f5);
     }
+  }
+
+  function deleteAllPipesAndRings()
+  {
+    for (let i = 9; i >= 0; --i)
+      {
+        scene.remove(upperPipes[i]);
+        scene.remove(lowerPipes[i]);
+        scene.remove(rings[i]);
+
+        upperPipes.pop();
+        lowerPipes.pop();
+        rings.pop();
+  
+      }
+
   }
 
   // provide an initial impulse
