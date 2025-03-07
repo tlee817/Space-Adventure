@@ -1,10 +1,14 @@
 import * as THREE from 'three';
-
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+//import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
+//import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
 
 export function createScene3() {
  const scene = new THREE.Scene();
  const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
  const renderer = new THREE.WebGLRenderer();
+ renderer.outputColorSpace=THREE.SRGBColorSpace;
  renderer.setSize(window.innerWidth, window.innerHeight);
  document.body.appendChild(renderer.domElement);
 
@@ -13,6 +17,48 @@ export function createScene3() {
 light.position.set(10, 10, 10);
 light.power=light.power*50;
 scene.add(light);
+
+
+/*
+var mtlLoader = new MTLLoader();
+mtlLoader.load('Light Fighter.mtl',function(materials){
+  materials.preload();
+  
+  var loader = new OBJLoader();
+  loader.setMaterials(materials);
+  loader.load(
+    'assets/spaceship-light-fighter.obj',
+    function ( object ) {
+      // Add the loaded object to the scene
+      LightFighter=object;
+      scene.add( object );
+      console.log(object.position);
+    },
+
+    // onProgress callback
+    function ( xhr ) {
+      console.log( (xhr.loaded / xhr.total * 100) + '% loaded' );
+    },
+
+    // onError callback
+    function ( err ) {
+      console.error( 'An error happened' );
+    }
+  );
+});
+*/
+let Spaceship=null;
+let Vertices=null;
+const loader = new GLTFLoader().setPath('assets/spaceship_gltf/');
+loader.load('scene.gltf', (gltf) => {
+  const mesh= gltf.scene;
+  Spaceship=mesh;
+  Spaceship.scale.set(0.1,0.1,0.1);
+  Spaceship.position.set(0, 0, 10);
+  console.log(Spaceship.matrix);
+  scene.add(Spaceship);
+});
+
 
 
  // Create a box (spaceship)
@@ -344,12 +390,21 @@ function updatePlanetMaterialUniforms(planet) {
  // Event listeners for movement using arrow keys
  document.addEventListener('keydown', (event) => {
    switch (event.key) {
-     case 'ArrowUp': spaceship.position.y += moveSpeed; break;
-     case 'ArrowDown': spaceship.position.y -= moveSpeed; break;
-     case 'ArrowLeft': spaceship.position.x -= moveSpeed; break;
-     case 'ArrowRight': spaceship.position.x += moveSpeed; break;
+     case 'ArrowUp': Spaceship.position.y += moveSpeed; break;
+     case 'ArrowDown': Spaceship.position.y -= moveSpeed; break;
+     case 'ArrowLeft': Spaceship.position.x -= moveSpeed; break;
+     case 'ArrowRight': Spaceship.position.x += moveSpeed; break;
    }
  });
+
+ document.addEventListener('keydown', (event) => {
+  switch (event.key) {
+    case 'ArrowUp': spaceship.position.y += moveSpeed; break;
+    case 'ArrowDown': spaceship.position.y -= moveSpeed; break;
+    case 'ArrowLeft': spaceship.position.x -= moveSpeed; break;
+    case 'ArrowRight': spaceship.position.x += moveSpeed; break;
+  }
+});
 
 
  // Function to find the closest point on the spaceship (AABB) to the planet
@@ -390,6 +445,41 @@ function updatePlanetMaterialUniforms(planet) {
      spaceship.material.color.set(0x00ff00); // Stays green
    }
  }
+   /*
+   function getClosestPoint(spaceship, spherePos) {
+    const spaceshipMin = Spaceship.position.clone().subScalar(0.5); // Half-size of box is 0.5
+    const spaceshipMax = Spaceship.position.clone().addScalar(0.5);
+ 
+ 
+    return new THREE.Vector3(
+      Math.max(spaceshipMin.x, Math.min(spherePos.x, spaceshipMax.x)),
+      Math.max(spaceshipMin.y, Math.min(spherePos.y, spaceshipMax.y)),
+      Math.max(spaceshipMin.z, Math.min(spherePos.z, spaceshipMax.z))
+    );
+  }
+// Check collision:
+function checkCollision() {
+  let collisionDetected = false;
+
+  for (let planet of planets) {
+    const closestPoint = getClosestPoint();
+    const distanceSquared = closestPoint.distanceToSquared(planet.position);
+
+    if (distanceSquared < sphereRadius * sphereRadius) {
+      collisionDetected = true;
+      break;
+    }
+  }
+
+  if (collisionDetected) {
+    console.log("Collision detected!");
+    //Spaceship.material.color.set(0xff0000); // Spaceship turns red
+  } else {
+    //Spaceship.material.color.set(0x00ff00); // Stays green
+  }
+}
+*/
+
 let planetSpeed=0.2;
  // Animate function to move planets along the z-axis
  function animate() {
