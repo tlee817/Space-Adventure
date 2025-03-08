@@ -2,8 +2,9 @@
   "name": "space-adventure",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "index.html",
   "scripts": {
+    "start": "npm install && npx vite",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
@@ -21,6 +22,6 @@
     "three": "^0.173.0"
   },
   "devDependencies": {
-    "vite": "^6.1.1"
+    "vite": "^6.2.1"
   }
 }
