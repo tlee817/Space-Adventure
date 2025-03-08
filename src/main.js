@@ -25,9 +25,9 @@ controls.maxDistance = 50;
 // Create Scenes
 const { scene: scene1, main_hub_planet, main_hub_spaceship } = createScene1(renderer,camera);
 const scene2 = createScene2(renderer, camera);
-const scene3 = createScene3();
+//const scene3 = createScene3();
 
-let activeScene = scene3;
+let activeScene = scene1;
 
 // Click
 const raycaster = new THREE.Raycaster();
@@ -41,19 +41,21 @@ window.addEventListener('click', (event) => {
 
     if(activeScene === scene1)  // Main Hub
     {
-    const intersects = raycaster.intersectObjects(scene1.children);
-    if (intersects.length > 0) 
-    {
-        const clickedObject = intersects[0].object;
+        const intersects = raycaster.intersectObjects(scene1.children);
+        if (intersects.length > 0) 
+        {
+            const clickedObject = intersects[0].object;
 
-        if (clickedObject === main_hub_planet) 
-        {
-            activeScene = scene2;
-        }else if (clickedObject === main_hub_spaceship) 
-        {
-            activeScene = scene3;
+            if (clickedObject === main_hub_planet) 
+            {
+                activeScene = scene2;
+            } else if (clickedObject === main_hub_spaceship) 
+            {
+                // the rocket bouncing scene currently needs to be created the moment it is needed
+                const scene3 = createScene3();
+                activeScene = scene3;
+            }
         }
-    }
     }else if(activeScene===scene2)  // Planet Shooting
     {
         const intersects = raycaster.intersectObjects(scene2.children);

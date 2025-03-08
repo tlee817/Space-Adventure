@@ -220,14 +220,13 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
 
   let pausePipeFlow = false;
 
-  let prevRocketYPosition = rocket.position.y;
-  let deltaRocketY = 0;
-  let acceleration = 0.001;
+  // Can adjust the acceleration and verticalImpulse values to change gravity and rocket impulse effect
+  let acceleration    = 0.009;//0.003;
+  let verticalImpulse = 0.9;//0.5;
+  const obstacleHorizontalMovementSpeed = 0.2; // make this number bigger to "make the rocket fly to the right" faster (makes the obstacles shift faster)
 
   let velocityY = 0;
-
   let gameOverAlerted = false;
-
 
 
   function animate()
@@ -242,17 +241,14 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
 
 
     // keep the rocket falling
-    deltaRocketY = rocket.position.y - prevRocketYPosition;
     velocityY -= acceleration;
-    rocket.position.y += velocityY - 0.13; //-= gameScale*0.05 + acceleration - deltaRocketY ** 2;
-    prevRocketYPosition = rocket.position.y;
+    rocket.position.y += velocityY - 0.13;
     
 
     // the pipes and rings will be moving from right to left while the rocket navigates through
     // the pipes and rings can stop moving to the left when the left arrow button is pressed in case we want to wait for a safe time to proceed
     if (!pausePipeFlow)
     {
-      const obstacleHorizontalMovementSpeed = 0.2; // make this number bigger to "make the rocket fly to the right" faster (makes the obstacles shift faster)
       // flow the pipes and rings to the left
       for (let i = 0; i < upperPipes.length; i++)
       {
@@ -371,8 +367,6 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
 
 
    camera.position.z = 10;
-   let moveSpeed = 0.5;//0.3;
-  const sphereRadius = 2;//both planets right now have the radius of 2
 
 
    // Event listeners for movement using arrow keys
@@ -381,7 +375,7 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
     {
       switch (event.key) {
         case 'ArrowUp': 
-        velocityY = gameScale * moveSpeed;
+        velocityY = gameScale * verticalImpulse;
         break;
         case 'ArrowDown':
         break;
@@ -392,7 +386,7 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
         case 'ArrowRight':
                           pausePipeFlow = false; break;
         case ' ' :
-                velocityY = gameScale * moveSpeed; 
+                velocityY = gameScale * verticalImpulse; 
                 break;
       }
 
