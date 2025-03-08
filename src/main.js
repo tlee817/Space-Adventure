@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createScene1 } from './scene1.js';
 import { createScene2 } from './scene2.js';
 import { createScene3} from './scene3.js';
-//import { createScene2Pt5 } from './scene2Pt5.js'; // TODO: enable when the js is available
+import { createScene2Pt5 } from './scene2Pt5.js';
 
 // Renderer 
 const renderer = new THREE.WebGLRenderer();
@@ -56,9 +56,8 @@ window.addEventListener('click', (event) => {
             }
             else if (clickedObject === sun)
             {
-                // TODO: enable when scene2Pt5.js has been added
-                //const scene2Pt5 = createScene2Pt5();
-                //activeScene = scene2Pt5;
+                const scene2Pt5 = createScene2Pt5();
+                activeScene = scene2Pt5;
             }
         }
     }else if(activeScene===scene2)  // Planet Shooting
