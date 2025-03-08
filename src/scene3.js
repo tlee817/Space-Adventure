@@ -122,7 +122,7 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
  }
 
 
-  // add a series of pipes and slits that the rocket must navigate through
+  // add a series of pipe and ring obstacles that the rocket must navigate through
   const gameScale = 0.35;
   
   const pipeTexture = new THREE.TextureLoader().load('../assets/pipetex3.jpg');
@@ -248,14 +248,17 @@ const flametextures = ['../assets/flame1.jpg', '../assets/flame2.webp', '../asse
     prevRocketYPosition = rocket.position.y;
     
 
+    // the pipes and rings will be moving from right to left while the rocket navigates through
+    // the pipes and rings can stop moving to the left when the left arrow button is pressed in case we want to wait for a safe time to proceed
     if (!pausePipeFlow)
     {
+      const obstacleHorizontalMovementSpeed = 0.2; // make this number bigger to "make the rocket fly to the right" faster (makes the obstacles shift faster)
       // flow the pipes and rings to the left
       for (let i = 0; i < upperPipes.length; i++)
       {
-        upperPipes[i].position.x -= gameScale*0.05;
-        lowerPipes[i].position.x -= gameScale*0.05;
-             rings[i].position.x -= gameScale*0.05;
+        upperPipes[i].position.x -= gameScale*obstacleHorizontalMovementSpeed;
+        lowerPipes[i].position.x -= gameScale*obstacleHorizontalMovementSpeed;
+             rings[i].position.x -= gameScale*obstacleHorizontalMovementSpeed;
       }
     }
 
