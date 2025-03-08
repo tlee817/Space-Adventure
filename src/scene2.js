@@ -31,7 +31,7 @@ export function createScene2(renderer, camera) {
     const pointLight = new THREE.PointLight(0xFFFFFF, 5, 25, 0.5);
     pointLight.position.set(0, 0, 0);
     scene.add(pointLight);
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.02);
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.02); //0.02
     scene.add(ambientLight);
 
 

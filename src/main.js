@@ -62,7 +62,40 @@ window.addEventListener('click', (event) => {
         }
     }else if(activeScene===scene2)  // Planet Shooting
     {
+        const mouse = new THREE.Vector2(
+            (event.clientX / window.innerWidth) * 2 - 1,
+            -(event.clientY / window.innerHeight) * 2 + 1
+        );
+        const raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(mouse, camera);
+        const targetPosition = new THREE.Vector3();
+        raycaster.ray.at(50, targetPosition);
 
+        const bulletGeometry = new THREE.SphereGeometry(0.2, 8, 8);
+        const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffb300 });
+        const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
+        bullet.position.copy(camera.position);
+
+        const direction = new THREE.Vector3().subVectors(targetPosition, bullet.position).normalize();
+        bullet.userData.velocity = direction.multiplyScalar(2);
+        const bulletLight = new THREE.PointLight(0xffb300, 10, 10); // (color, intensity, distance)
+        bulletLight.position.copy(bullet.position);
+        bullet.userData.light = bulletLight;
+        scene2.add(bullet);
+        scene2.add(bulletLight);
+        const bulletSpeed = 2;
+        function animateBullet() {
+        bullet.position.add(direction.clone().multiplyScalar(bulletSpeed));
+        bullet.userData.light.position.copy(bullet.position);
+        if (bullet.position.length() > 100) {
+            scene2.remove(bullet);
+            scene.remove(bullet.userData.light);
+            return;
+        }
+        requestAnimationFrame(animateBullet);
+        
+    }
+    animateBullet();
         const intersects = raycaster.intersectObjects(scene2.children);
         if (intersects.length > 0) 
         {
