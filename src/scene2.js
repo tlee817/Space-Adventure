@@ -1,8 +1,32 @@
 import * as THREE from 'three';
-// import planetImg from '../assets/planettexture.png';
+
+export function createStarField() {
+    const starGeometry = new THREE.BufferGeometry();
+    const starMaterial = new THREE.PointsMaterial({
+        color: 0xffffff,
+        size: 0.1, 
+        transparent: true
+    });
+
+    const starVertices = [];
+    for (let i = 0; i < 5000; i++) { 
+        const x = (Math.random() - 0.5) * 100; 
+        const y = (Math.random() - 0.5) * 100; 
+        const z = (Math.random() - 0.5) * 100;
+        starVertices.push(x, y, z);
+    }
+
+    starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+    const stars = new THREE.Points(starGeometry, starMaterial);
+    stars.userData.isStarField = true;
+    return stars;
+}
 
 export function createScene2(renderer, camera) {
+    // document.addEventListener("click", shootBullet);
     const scene = new THREE.Scene();
+    const star = createStarField();
+    scene.add(star);
 
     const pointLight = new THREE.PointLight(0xFFFFFF, 5, 25, 0.5);
     pointLight.position.set(0, 0, 0);
@@ -10,7 +34,7 @@ export function createScene2(renderer, camera) {
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.02);
     scene.add(ambientLight);
 
-    
+
     const spheres = [];
     const orbitSpeeds = [5/4, 5/5, 5/7.5, 5/10, 5/12.5, 5/15, 5/17.5];
     const orbitRadii = [2, 4, 6, 8, 11, 14, 19];
