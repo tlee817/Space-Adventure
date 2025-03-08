@@ -56,6 +56,7 @@ window.addEventListener('click', (event) => {
     }
     }else if(activeScene===scene2)  // Planet Shooting
     {
+
         const intersects = raycaster.intersectObjects(scene2.children);
         if (intersects.length > 0) 
         {
