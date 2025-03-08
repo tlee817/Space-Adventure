@@ -2,8 +2,8 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createScene1 } from './scene1.js';
 import { createScene2 } from './scene2.js';
-// import { createScene3, spaceship2, stabilityWings, boosterEngine } from './scene3.js';
 import { createScene3} from './scene3.js';
+//import { createScene2Pt5 } from './scene2Pt5.js'; // TODO: enable when the js is available
 
 // Renderer 
 const renderer = new THREE.WebGLRenderer();
@@ -23,9 +23,8 @@ controls.minDistance = 10;
 controls.maxDistance = 50;
 
 // Create Scenes
-const { scene: scene1, main_hub_planet, main_hub_spaceship } = createScene1(renderer,camera);
+const { scene: scene1, main_hub_planet, main_hub_spaceship, sun } = createScene1(renderer,camera);
 const scene2 = createScene2(renderer, camera);
-const scene3 = createScene3();
 
 let activeScene = scene1;
 
@@ -41,19 +40,27 @@ window.addEventListener('click', (event) => {
 
     if(activeScene === scene1)  // Main Hub
     {
-    const intersects = raycaster.intersectObjects(scene1.children);
-    if (intersects.length > 0) 
-    {
-        const clickedObject = intersects[0].object;
+        const intersects = raycaster.intersectObjects(scene1.children);
+        if (intersects.length > 0) 
+        {
+            const clickedObject = intersects[0].object;
 
-        if (clickedObject === main_hub_planet) 
-        {
-            activeScene = scene2;
-        }else if (clickedObject === main_hub_spaceship) 
-        {
-            activeScene = scene3;
+            if (clickedObject === main_hub_planet) 
+            {
+                activeScene = scene2;
+            }else if (clickedObject === main_hub_spaceship) 
+            {
+                // don't create scene 3 until it's been clicked on/selected
+                const scene3 = createScene3();
+                activeScene = scene3;
+            }
+            else if (clickedObject === sun)
+            {
+                // TODO: enable when scene2Pt5.js has been added
+                //const scene2Pt5 = createScene2Pt5();
+                //activeScene = scene2Pt5;
+            }
         }
-    }
     }else if(activeScene===scene2)  // Planet Shooting
     {
         const intersects = raycaster.intersectObjects(scene2.children);
@@ -94,8 +101,6 @@ function animate() {
     }
 
     renderer.render(activeScene, camera);
-
-    scene3FlightSimulationUpdate();
 }
 
 animate();
@@ -104,10 +109,12 @@ animate();
 /*
 Notes:
 Scene 1: Main Hub
-Scene 2: Platnet shooting
+Scene 2: Planet shooting
+Scene 2Pt5 Flappy Bird Rocket Edition (if click on the big yellow sun)
 Scene 3: Flying Spaceship
 
 Comment:
 - Might need to separate scenes into different files later
 - 
+- Run "npm start" to ensure vite dependency is installed and to start vite all in one easy command
 */

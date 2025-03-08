@@ -127,7 +127,7 @@ export function createScene1(renderer, camera) {
     animate();
 
 
-    return { scene, main_hub_planet, main_hub_spaceship }; 
+    return { scene, main_hub_planet, main_hub_spaceship, sun }; 
 }
 
 
