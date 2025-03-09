@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 export function createStarField() {
     const starGeometry = new THREE.BufferGeometry();
@@ -7,6 +8,7 @@ export function createStarField() {
         size: 0.1, 
         transparent: true
     });
+    
 
     const starVertices = [];
     for (let i = 0; i < 5000; i++) { 
@@ -27,12 +29,25 @@ export function createScene2(renderer, camera) {
     const scene = new THREE.Scene();
     const star = createStarField();
     scene.add(star);
+    
 
     const pointLight = new THREE.PointLight(0xFFFFFF, 5, 25, 0.5);
     pointLight.position.set(0, 0, 0);
     scene.add(pointLight);
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.02); //0.02
     scene.add(ambientLight);
+
+    let gun=null;
+    //let Vertices=null;
+    const loader = new GLTFLoader().setPath('assets/smoking_gun_gltf/');
+    loader.load('scene.gltf', (gltf) => {
+     const mesh= gltf.scene;
+     gun=mesh;
+     gun.scale.set(0.2,0.2,0.2);
+     gun.position.set(0, -2, 8);
+     //console.log(gun.matrix);
+     scene.add(gun);
+    });
 
 
     const spheres = [];
