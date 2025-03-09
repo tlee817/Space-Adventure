@@ -89,7 +89,7 @@ window.addEventListener('click', (event) => {
         bullet.userData.light.position.copy(bullet.position);
         if (bullet.position.length() > 100) {
             scene2.remove(bullet);
-            scene.remove(bullet.userData.light);
+            scene2.remove(bullet.userData.light);
             return;
         }
         requestAnimationFrame(animateBullet);
@@ -105,6 +105,12 @@ window.addEventListener('click', (event) => {
             if (clickedPlanet.userData.hitpoint === 0) 
             {
                 activeScene.remove(clickedPlanet);
+
+                // Return to main hub
+                const remainingPlanets = scene2.children.filter(obj => obj.userData.hitpoint > 0);
+                if (remainingPlanets.length === 0) {
+                    activeScene = scene1; 
+                }
             }
         }
     }else   // Flying Spaceship
