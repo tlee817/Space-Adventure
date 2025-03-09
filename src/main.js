@@ -41,12 +41,9 @@ audioLoader.load('assets/background.mp3', function(buffer) {
     backgroundMusic.play();
 });
 
-//Sound effect
-// Create an AudioListener and attach it to the camera
+// Sound effect
 const sound_effect = new THREE.AudioListener();
 camera.add(sound_effect);
-
-// Create the shooting sound
 const shootingSound = new THREE.Audio(sound_effect);
 const sfLoader = new THREE.AudioLoader();
 sfLoader.load('assets/laser_gun_sound.mp3', function(buffer) {
@@ -157,13 +154,13 @@ window.addEventListener('keydown', (event) => {
     if (event.key === 'm') {
         if (backgroundMusic.isPlaying) {
             backgroundMusic.pause();
+            console.log("Music paused");
         } else {
             backgroundMusic.play();
+            console.log("Music playing :)");
         }
     }
 });
-
-
 
 
 function animate() {
