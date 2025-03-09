@@ -53,8 +53,8 @@ const loader = new GLTFLoader().setPath('assets/spaceship_gltf/');
 loader.load('scene.gltf', (gltf) => {
   const mesh= gltf.scene;
   Spaceship=mesh;
-  Spaceship.scale.set(0.1,0.1,0.1);
-  Spaceship.position.set(0, 0, 10);
+  Spaceship.scale.set(0.08,0.08,0.08);
+  Spaceship.position.set(0, 0, 8);
   console.log(Spaceship.matrix);
   scene.add(Spaceship);
 });
@@ -65,9 +65,17 @@ loader.load('scene.gltf', (gltf) => {
  const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
  const boxMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
  const spaceship = new THREE.Mesh(boxGeometry, boxMaterial);
- spaceship.position.set(0, 0, 10);
+ spaceship.position.set(0, 0, 8);
  scene.add(spaceship);
 
+ const wingGeometry1 = new THREE.BoxGeometry(.5, .5, .5);
+ const wing1 = new THREE.Mesh(wingGeometry1 , boxMaterial);
+ wing1.position.set(.75, 0, 8);
+ scene.add(wing1);
+
+ const wing2 = new THREE.Mesh(wingGeometry1 , boxMaterial);
+ wing2.position.set(-.75, 0, 8);
+ scene.add(wing2);
 
  window.addEventListener("keydown", function(event) {
    if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
@@ -390,21 +398,34 @@ function updatePlanetMaterialUniforms(planet) {
  // Event listeners for movement using arrow keys
  document.addEventListener('keydown', (event) => {
    switch (event.key) {
-     case 'ArrowUp': Spaceship.position.y += moveSpeed; break;
-     case 'ArrowDown': Spaceship.position.y -= moveSpeed; break;
-     case 'ArrowLeft': Spaceship.position.x -= moveSpeed; break;
-     case 'ArrowRight': Spaceship.position.x += moveSpeed; break;
+     case 'ArrowUp':
+      Spaceship.position.y += moveSpeed; 
+      spaceship.position.y += moveSpeed;
+      wing1.position.y += moveSpeed;
+      wing2.position.y += moveSpeed;
+      break;
+     case 'ArrowDown': 
+      Spaceship.position.y -= moveSpeed;
+      spaceship.position.y -= moveSpeed;
+      wing1.position.y -= moveSpeed;
+      wing2.position.y -= moveSpeed; 
+      break;
+     case 'ArrowLeft': 
+      Spaceship.position.x -= moveSpeed;
+      spaceship.position.x -= moveSpeed;
+      wing1.position.x -= moveSpeed;
+      wing2.position.x -= moveSpeed;  
+      break;
+     case 'ArrowRight': 
+      Spaceship.position.x += moveSpeed; 
+      spaceship.position.x += moveSpeed;
+      wing1.position.x += moveSpeed;
+      wing2.position.x += moveSpeed; 
+      break;
    }
  });
 
- document.addEventListener('keydown', (event) => {
-  switch (event.key) {
-    case 'ArrowUp': spaceship.position.y += moveSpeed; break;
-    case 'ArrowDown': spaceship.position.y -= moveSpeed; break;
-    case 'ArrowLeft': spaceship.position.x -= moveSpeed; break;
-    case 'ArrowRight': spaceship.position.x += moveSpeed; break;
-  }
-});
+ 
 
 
  // Function to find the closest point on the spaceship (AABB) to the planet
@@ -419,6 +440,18 @@ function updatePlanetMaterialUniforms(planet) {
      Math.max(spaceshipMin.z, Math.min(spherePos.z, spaceshipMax.z))
    );
  }
+ function getClosestPointWing(wing, spherePos) {
+  const spaceshipMin = spaceship.position.clone().subScalar(0.25); // Half-size of box is 0.5
+  const spaceshipMax = spaceship.position.clone().addScalar(0.25);
+
+
+  return new THREE.Vector3(
+    Math.max(spaceshipMin.x, Math.min(spherePos.x, spaceshipMax.x)),
+    Math.max(spaceshipMin.y, Math.min(spherePos.y, spaceshipMax.y)),
+    Math.max(spaceshipMin.z, Math.min(spherePos.z, spaceshipMax.z))
+  );
+}
+
 
 
  // Function to check for collisions
@@ -430,8 +463,13 @@ function updatePlanetMaterialUniforms(planet) {
      const closestPoint = getClosestPoint(spaceship, planet.position);
      const distance = closestPoint.distanceTo(planet.position);
 
+     const closestPointWing1 = getClosestPoint(wing1, planet.position);
+     const distanceWing1 = closestPointWing1.distanceTo(planet.position);
 
-     if (distance < sphereRadius) {
+     const closestPointWing2 = getClosestPoint(wing2, planet.position);
+     const distanceWing2 = closestPointWing2.distanceTo(planet.position);
+
+     if (distance < sphereRadius|| distanceWing1 < sphereRadius || distanceWing2 < sphereRadius) {
        collisionDetected = true;
        break;
      }
@@ -439,8 +477,18 @@ function updatePlanetMaterialUniforms(planet) {
 
 
    if (collisionDetected) {
-     console.log("Collision detected!");
-     spaceship.material.color.set(0xff0000); // Spaceship turns red
+    console.log("Collision detected!");
+    spaceship.material.color.set(0xff0000); // Spaceship turns red
+    const texture = new THREE.TextureLoader().load('/assets/Game-Over (1).png');
+    const geometry = new THREE.BoxGeometry( 4, 4, 4);
+    const material = new THREE.MeshBasicMaterial( { map: texture } );
+    const GameOverMesh = new THREE.Mesh(geometry, material);
+    GameOverMesh.position.set(0,3,12);
+    scene.add(GameOverMesh);
+    for(let planet of planets){
+      planet.visible=!visibility;
+  }
+    start=false;
    } else {
      spaceship.material.color.set(0x00ff00); // Stays green
    }
@@ -485,11 +533,11 @@ let planetSpeed=0.2;
  function animate() {
    requestAnimationFrame(animate);
 
-
+  if(start){
    // Move planets toward the spaceship
    planets.forEach(planet => {
      planet.position.z += planetSpeed; // Adjust speed
-
+     checkCollision();
 
      // Reset planet position once it goes past the camera
      if (planet.position.z > 10) {
@@ -499,10 +547,12 @@ let planetSpeed=0.2;
          -(Math.random() * 30 + 20)    // Reset z (20 to 50)
        );
      }
+     checkCollision();
    });
    planetSpeed+=.00005;
   
    checkCollision();
+  }
    for(let planet of planets){
      updatePlanetMaterialUniforms(planet);
  }
@@ -515,5 +565,18 @@ let planetSpeed=0.2;
  animate();
  return scene;
 }
+let start=false;
+let visibility=true;
+window.addEventListener('keydown', onKeyPress); // onKeyPress is called each time a key is pressed
+// Function to handle keypress
+function onKeyPress(event) {
+    switch (event.key) {
+        case 's': // Note we only do this if s is pressed.
+            start = !start;
+            break;
+        default:
+            console.log(`Key ${event.key} pressed`);
 
+    }
+}
 
