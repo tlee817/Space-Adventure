@@ -69,7 +69,7 @@ window.addEventListener('click', (event) => {
             }
             else if (clickedObject === sun)
             {
-                const scene2Pt5 = createScene2Pt5();
+                const scene2Pt5 = createScene2Pt5(renderer,camera);
                 activeScene = scene2Pt5;
             }
         }
