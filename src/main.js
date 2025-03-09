@@ -28,6 +28,19 @@ const scene2 = createScene2(renderer, camera);
 
 let activeScene = scene1;
 
+// Music
+const listener = new THREE.AudioListener();
+camera.add(listener); 
+const backgroundMusic = new THREE.Audio(listener);
+
+const audioLoader = new THREE.AudioLoader();
+audioLoader.load('assets/background.mp3', function(buffer) {
+    backgroundMusic.setBuffer(buffer);
+    backgroundMusic.setLoop(true); 
+    backgroundMusic.setVolume(0.5); 
+    backgroundMusic.play();
+});
+
 // Click
 const raycaster = new THREE.Raycaster();
 const mouse = new THREE.Vector2();
@@ -109,13 +122,24 @@ window.addEventListener('click', (event) => {
                 // Return to main hub
                 const remainingPlanets = scene2.children.filter(obj => obj.userData.hitpoint > 0);
                 if (remainingPlanets.length === 0) {
-                    activeScene = scene1; 
+                    activeScene = scene1;
+                    scene1.remove(main_hub_planet);
                 }
             }
         }
     }else   // Flying Spaceship
     {
 
+    }
+});
+
+window.addEventListener('keydown', (event) => {
+    if (event.key === 'm') {
+        if (backgroundMusic.isPlaying) {
+            backgroundMusic.pause();
+        } else {
+            backgroundMusic.play();
+        }
     }
 });
 
