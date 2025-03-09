@@ -37,8 +37,21 @@ const audioLoader = new THREE.AudioLoader();
 audioLoader.load('assets/background.mp3', function(buffer) {
     backgroundMusic.setBuffer(buffer);
     backgroundMusic.setLoop(true); 
-    backgroundMusic.setVolume(0.5); 
+    backgroundMusic.setVolume(0.1); 
     backgroundMusic.play();
+});
+
+//Sound effect
+// Create an AudioListener and attach it to the camera
+const sound_effect = new THREE.AudioListener();
+camera.add(sound_effect);
+
+// Create the shooting sound
+const shootingSound = new THREE.Audio(sound_effect);
+const sfLoader = new THREE.AudioLoader();
+sfLoader.load('assets/laser_gun_sound.mp3', function(buffer) {
+    shootingSound.setBuffer(buffer);
+    shootingSound.setVolume(0.5);
 });
 
 // Click
@@ -83,6 +96,13 @@ window.addEventListener('click', (event) => {
         raycaster.setFromCamera(mouse, camera);
         const targetPosition = new THREE.Vector3();
         raycaster.ray.at(50, targetPosition);
+        
+        // Sound effect
+        if (shootingSound.isPlaying) 
+        {
+            shootingSound.stop();
+        }
+        shootingSound.play();
 
         const bulletGeometry = new THREE.SphereGeometry(0.2, 8, 8);
         const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffb300 });
