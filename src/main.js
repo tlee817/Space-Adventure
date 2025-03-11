@@ -64,6 +64,7 @@ window.addEventListener('click', (event) => {
     if(activeScene === scene1)  // Main Hub
     {
         const intersects = raycaster.intersectObjects(scene1.children);
+        
         if (intersects.length > 0) 
         {
             const clickedObject = intersects[0].object;
@@ -71,6 +72,7 @@ window.addEventListener('click', (event) => {
             if (clickedObject === main_hub_planet) 
             {
                 activeScene = scene2;
+                controls.enabled = false; 
             }else if (clickedObject === main_hub_spaceship) 
             {
                 // don't create scene 3 until it's been clicked on/selected
@@ -85,6 +87,7 @@ window.addEventListener('click', (event) => {
         }
     }else if(activeScene===scene2)  // Planet Shooting
     {
+
         const mouse = new THREE.Vector2(
             (event.clientX / window.innerWidth) * 2 - 1,
             -(event.clientY / window.innerHeight) * 2 + 1
@@ -114,36 +117,77 @@ window.addEventListener('click', (event) => {
         scene2.add(bullet);
         scene2.add(bulletLight);
         const bulletSpeed = 2;
-        function animateBullet() {
-        bullet.position.add(direction.clone().multiplyScalar(bulletSpeed));
-        bullet.userData.light.position.copy(bullet.position);
-        if (bullet.position.length() > 100) {
-            scene2.remove(bullet);
-            scene2.remove(bullet.userData.light);
-            return;
-        }
-        requestAnimationFrame(animateBullet);
-        
-    }
-    animateBullet();
-        const intersects = raycaster.intersectObjects(scene2.children);
-        if (intersects.length > 0) 
-        {
-            const clickedPlanet = intersects[0].object;
-            clickedPlanet.userData.hitpoint =  clickedPlanet.userData.hitpoint -1;
-            console.log("hitpoint: ", clickedPlanet.userData.hitpoint );
-            if (clickedPlanet.userData.hitpoint === 0) 
-            {
-                activeScene.remove(clickedPlanet);
 
-                // Return to main hub
-                const remainingPlanets = scene2.children.filter(obj => obj.userData.hitpoint > 0);
-                if (remainingPlanets.length === 0) {
-                    activeScene = scene1;
-                    scene1.remove(main_hub_planet);
+        function animateBullet() 
+        {
+            bullet.position.add(direction.clone().multiplyScalar(bulletSpeed));
+            bullet.userData.light.position.copy(bullet.position);
+            for (let i = 0; i < scene2.children.length; i++) {
+                const obj = scene2.children[i];
+                
+                // If the attribute "hitpoint" exists , aka only planets
+                if (obj.userData.hitpoint) { 
+                    const distance = bullet.position.distanceTo(obj.position);
+                    if (distance<2) { 
+                        obj.userData.hitpoint--;
+        
+                        console.log(`Planet hit! Remaining hitpoints: ${obj.userData.hitpoint}`);
+
+                        // Make the planet turns ref for a quick sec
+                        if (!obj.userData.originalColor) 
+                        {
+                            obj.userData.originalColor = obj.material.color.clone(); 
+                        }
+                        obj.material.color.set(0xff0000); 
+                        setTimeout(() => {obj.material.color.copy(obj.userData.originalColor);}, 200);
+
+                        if (obj.userData.hitpoint <= 0) {
+                            scene2.remove(obj); 
+                        }
+                        
+                        scene2.remove(bullet);
+                        scene2.remove(bullet.userData.light);
+
+                        // Return to main hub
+                    const remainingPlanets = scene2.children.filter(obj => obj.userData.hitpoint > 0);
+                    if (remainingPlanets.length === 0) 
+                     {
+                        activeScene = scene1;
+                       scene1.remove(main_hub_planet);
+                     }
+                        return;
+                    }
                 }
             }
+            
+            if (bullet.position.length() > 100) {
+                scene2.remove(bullet);
+                scene2.remove(bullet.userData.light);
+                return;
+            }
+            requestAnimationFrame(animateBullet);
+        
         }
+     animateBullet();
+    //     const intersects = raycaster.intersectObjects(scene2.children);
+    //     if (intersects.length > 0) 
+    //     {
+    //         const clickedPlanet = intersects[0].object;
+    //         clickedPlanet.userData.hitpoint =  clickedPlanet.userData.hitpoint -1;
+    //         console.log("hitpoint: ", clickedPlanet.userData.hitpoint );
+
+    //         if (clickedPlanet.userData.hitpoint === 0) 
+    //         {
+    //             activeScene.remove(clickedPlanet);
+
+    //             // Return to main hub
+    //             const remainingPlanets = scene2.children.filter(obj => obj.userData.hitpoint > 0);
+    //             if (remainingPlanets.length === 0) {
+    //                 activeScene = scene1;
+    //                 scene1.remove(main_hub_planet);
+    //             }
+    //         }
+    //     }
     }else   // Flying Spaceship
     {
 

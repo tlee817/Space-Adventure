@@ -127,7 +127,6 @@ export function createScene1(renderer, camera) {
         displacementMap: displacementMap, 
         displacementScale: 0.3,
         normalMap: normalMap
-
     });
     let main_hub_planet = new THREE.Mesh(main_hub_planet_Geometry, main_hub_planet_Material);
     main_hub_planet.position.set(-2, 0, 0);
