@@ -76,6 +76,7 @@ window.addEventListener('click', (event) => {
 
     if(activeScene === scene1)  // Main Hub
     {
+        
         bulletCount = 30;
         const intersects = raycaster.intersectObjects(scene1.children);
         
@@ -213,7 +214,7 @@ window.addEventListener('click', (event) => {
     //     }
     }else   // Flying Spaceship
     {
-
+        
     }
 });
 
@@ -239,6 +240,7 @@ function animate() {
     
     if(activeScene===scene1)
     {
+        controls.enabled = false;
         const stars = activeScene.children.find(obj => obj.userData.isStarField);
         if (stars) {
             stars.rotation.y += 0.0003; 

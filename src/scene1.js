@@ -1,5 +1,6 @@
 import * as THREE from 'three';
-
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 let clock = new THREE.Clock();
 let time = clock.getElapsedTime();
 
@@ -27,53 +28,6 @@ export function createStarField() {
 }
 
 
-function createSunMaterial() {
-    const textureLoader = new THREE.TextureLoader();
-    const noiseTexture = textureLoader.load('assets/noise.jpg'); 
-
-    return new THREE.ShaderMaterial({
-        uniforms: {
-            time: { value: 0 },
-            sunColor: { value: new THREE.Color(0xffcc00) }, 
-            noiseTexture: { value: noiseTexture }, 
-            emissive: { value: new THREE.Color(0xffaa00) }  
-        },
-        vertexShader: `
-            varying vec2 vUv;
-            uniform float time;
-            void main() {
-                vUv = uv;
-
-                float pulse = sin(time * 2.0 + length(position) * 0.3) * 2.5;
-                vec3 newPosition = position + normal * pulse;
-
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
-            }
-        `,
-        fragmentShader: `
-            varying vec2 vUv;
-            uniform float time;
-            uniform vec3 sunColor;
-            uniform vec3 emissive;
-            uniform sampler2D noiseTexture;
-
-            void main() {
-               
-                vec4 noiseTex = texture2D(noiseTexture, vUv + time * 0.02);
-                float noise = noiseTex.r;
-
-                if (noise < 0.1) {
-                    noise = 0.5 + 0.5 * sin(time * 2.0);
-                }
-
-                vec3 finalColor = mix(sunColor, emissive, noise * 0.6);
-                
-                gl_FragColor = vec4(finalColor, 1.0);
-            }
-        `,
-        transparent: false
-    });
-}
 
 // Moon texture
 const textureLoader = new THREE.TextureLoader();
@@ -132,16 +86,41 @@ export function createScene1(renderer, camera) {
     main_hub_planet.position.set(-2, 0, 0);
     scene.add(main_hub_planet);
 
-    const main_hub_spaceship_geometry = new THREE.BoxGeometry(1, 1, 1);
-    const main_hub_spaceship_material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
-    const main_hub_spaceship = new THREE.Mesh(main_hub_spaceship_geometry, main_hub_spaceship_material);
-    main_hub_spaceship.position.set(2, 0, 0);
+
+    const transparent_geometry = new THREE.BoxGeometry(5, 2, 1);
+    const transparent_material = new THREE.MeshBasicMaterial
+    ({
+    color: 0x00ff00, 
+    transparent: true, 
+    opacity: 0,     
+    });
+    const main_hub_spaceship = new THREE.Mesh(transparent_geometry, transparent_material);
     scene.add(main_hub_spaceship);
+    main_hub_spaceship.position.set(3.2, 0, 5.3);
+
+    //Spaceship
+    let spaceship;
+    const loader = new GLTFLoader().setPath('assets/hull_spaceship_gltf/');
+    loader.load('scene.gltf', (gltf) => {
+      const mesh= gltf.scene;
+      spaceship=mesh;
+      //Spaceship = new gltf.scene;
+      spaceship.scale.set(0.3,0.3,0.3);
+      spaceship.position.set(3, -3, 0);
+      spaceship.rotation.set(0, -3.14/2, 0);
+      //console.log(Spaceship.matrix);
+      scene.add(spaceship);
+  
+      // directionalLight.target = Spaceship;
+      // scene.add(directionalLight.target);
+    });
 
     function animate() {
         requestAnimationFrame(animate);
         
-        main_hub_planet.rotation.y += 0.002; 
+        main_hub_planet.rotation.y += 0.002;
+        //Spaceship.rotation.x += 0.005;
+        //Spaceship.rotation.y += 0.005;
         let time = clock.getElapsedTime();
   
         let period10 = time % 10.0;

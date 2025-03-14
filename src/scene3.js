@@ -271,6 +271,7 @@ export function createScene3(renderer, camera) {
                     //gameOver();
                     alert("Game Over!");
                     gameOverAlerted = true;
+                    
                     //return;
                 }
         
