@@ -178,6 +178,7 @@ window.addEventListener('click', (event) => {
                      {
                         activeScene = scene1;
                        scene1.remove(main_hub_planet);
+                       alert("Good job! Now click on the spaceship to escape the aliens!");
                      }
                         return;
                     }

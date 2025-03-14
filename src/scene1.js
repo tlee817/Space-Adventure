@@ -46,7 +46,12 @@ export function createScene1(renderer, camera) {
     const star = createStarField();
     scene.add(star);
 
-    
+    // 2nd Directional Light
+    const directionalLight2 = new THREE.DirectionalLight(0xffffff, 5);
+    directionalLight2.position.set(50, -100, 50);
+    directionalLight2.castShadow = true;
+    scene.add(directionalLight2);
+
     //const sunMaterial = createSunMaterial();
     //const sunGeometry = new THREE.SphereGeometry(50, 32, 32); 
     const sunColor = new THREE.Color("#FFFFFF");    //FD8813
