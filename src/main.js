@@ -3,7 +3,7 @@ import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { createScene1 } from './scene1.js';
 import { createScene2 } from './scene2.js';
 import { createScene3} from './scene3.js';
-import { createScene2Pt5 } from './scene2Pt5.js';
+//import { createScene2Pt5 } from './scene2Pt5.js';
 
 let bulletCount = 2; // Initialize bullet count
 const bulletCounterElement = document.createElement('div');
@@ -90,14 +90,16 @@ window.addEventListener('click', (event) => {
             }else if (clickedObject === main_hub_spaceship) 
             {
                 // don't create scene 3 until it's been clicked on/selected
-                const scene3 = createScene3();
+                const scene3 = createScene3(renderer,camera);
                 activeScene = scene3;
             }
+            /*
             else if (clickedObject === sun)
             {
                 const scene2Pt5 = createScene2Pt5(renderer,camera);
                 activeScene = scene2Pt5;
             }
+                */
         }
     }else if(activeScene===scene2)
     {
