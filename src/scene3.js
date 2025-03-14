@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-export function createScene2Pt5(renderer, camera) {
+export function createScene3(renderer, camera) {
     const pipeZPosition = -18.1;
     const listener = new THREE.AudioListener();
     camera.add(listener); 
