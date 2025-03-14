@@ -2,477 +2,518 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
-export function createScene3() {
- const scene = new THREE.Scene();
- const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
- const renderer = new THREE.WebGLRenderer();
- renderer.outputColorSpace=THREE.SRGBColorSpace;
- renderer.setSize(window.innerWidth, window.innerHeight);
- document.body.appendChild(renderer.domElement);
+export function createScene2Pt5(renderer, camera) {
+    const pipeZPosition = -18.1;
+    const listener = new THREE.AudioListener();
+    camera.add(listener); 
+    const backgroundMusic = new THREE.Audio(listener);
+    
+    const audioLoader = new THREE.AudioLoader();
+    audioLoader.load('assets/StarWars.mp3', function(buffer) {
+        backgroundMusic.setBuffer(buffer);
+        backgroundMusic.setLoop(true); 
+        backgroundMusic.setVolume(0.1); 
+        backgroundMusic.play();
+    });
+
+  const scene = new THREE.Scene();
+  camera.position.set(0, 15, 35);
+  camera.lookAt(new THREE.Vector3(0, 0, -5));
+  
+   // Add lighting
+  const directionalLight = new THREE.DirectionalLight(0xffffd6, 10);
+  directionalLight.position.set(-50, 100, 50)//5, 10, 7.5);
+  directionalLight.castShadow = true;
+  scene.add(directionalLight);
+
+  const ambientLight = new THREE.AmbientLight(0x404040, 10.0); // soft white light
+  scene.add(ambientLight);
+
+  const directionalLight2 = new THREE.DirectionalLight(0xffffff, 3);
+  directionalLight2.position.set(0, 0, 50);
+  //directionalLight2.target.position.set(100, 0, 1);
+  directionalLight2.castShadow = true;
+  scene.add(directionalLight2);
+
+  let gameComplete = false;
+  let start=false;
+  window.addEventListener('keydown', onKeyPress); 
+  function onKeyPress(event) {
+      switch (event.key) {
+          case ' ': 
+              start = true;
+              break;
+          default:
+              //console.log(`Key ${event.key} pressed`);
+  
+      }
+  }
+//   const spaceShipTexture = new THREE.TextureLoader().load('../assets/FuturisticCoating3.jpg');
+//   spaceShipTexture.wrapS = THREE.RepeatWrapping;
+//   spaceShipTexture.wrapT = THREE.RepeatWrapping;
 
 
-let light = new THREE.PointLight(0xffffff, 1, 0, 1);
-light.position.set(10, 10, 10);
-light.power=light.power*50;
-scene.add(light);
+  // replacing cylinder and cone rocket with melin falcon
+  // helpful loader code from scene3 (lightly modified)!
+  let Spaceship;
+  const loader = new GLTFLoader().setPath('assets/hull_spaceship_gltf/');
+  loader.load('scene.gltf', (gltf) => {
+    const mesh= gltf.scene;
+    Spaceship=mesh;
+    //Spaceship = new gltf.scene;
+    Spaceship.scale.set(0.3,0.3,0.3);
+    Spaceship.position.set(-8,-2.2, -22)
+    Spaceship.rotation.set(0, -3.14/2, 0);
+    //console.log(Spaceship.matrix);
+    scene.add(Spaceship);
 
+    // directionalLight.target = Spaceship;
+    // scene.add(directionalLight.target);
+  });
+  let detectorGeometry = new THREE.CylinderGeometry(2, 2, .8, 32);
+  const detectorMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
+   const detector = new THREE.Mesh(detectorGeometry, detectorMaterial);
+   detector.position.set(-8, .7, -18.1);
+   scene.add(detector);
+   detector.visible=false;
 
-let Spaceship=null;
-let Vertices=null;
-const loader = new GLTFLoader().setPath('assets/spaceship_gltf/');
-loader.load('scene.gltf', (gltf) => {
-const mesh= gltf.scene;
-Spaceship=mesh;
-Spaceship.scale.set(0.08,0.08,0.08);
-Spaceship.position.set(0, 0, 8);
-console.log(Spaceship.matrix);
-scene.add(Spaceship);
-});
+   let detector2Geometry = new THREE.BoxGeometry(2,.8,2);
+   const detector2 = new THREE.Mesh(detector2Geometry, detectorMaterial);
+   detector2.position.set(-6, .7, -18.1);
+   scene.add(detector2);
+   detector2.visible=false;
+  
 
-
- const boxGeometry = new THREE.BoxGeometry(1, 1, 1);
- const boxMaterial = new THREE.MeshBasicMaterial({ color: 0x00ff00, wireframe: true });
- const spaceship = new THREE.Mesh(boxGeometry, boxMaterial);
- spaceship.position.set(0, 0, 8);
- scene.add(spaceship);
- spaceship.visible=false;
-
- const wingGeometry1 = new THREE.BoxGeometry(.5, .5, .5);
- const wing1 = new THREE.Mesh(wingGeometry1 , boxMaterial);
- wing1.position.set(.75, 0, 8);
- scene.add(wing1);
- wing1.visible=false;
-
- const wing2 = new THREE.Mesh(wingGeometry1 , boxMaterial);
- wing2.position.set(-.75, 0, 8);
- scene.add(wing2);
- wing2.visible=false;
-
- window.addEventListener("keydown", function(event) {
-   if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(event.key)) {
+  window.addEventListener("keydown", function(event) {
+   if (["ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight", " "].includes(event.key)) {
      event.preventDefault();
    }
  });
 
-
-let planet1_Geometry = new THREE.SphereGeometry(2, 8, 6);
-let planet1_Material= new THREE.MeshPhongMaterial( {
-   color: 0xC83CB9,
-   flatShading: true,
-});
-let planet1 = new THREE.Mesh( planet1_Geometry, planet1_Material );
-planet1.position.set(
- (Math.random() * 10) - 5,  
- 0,   
- -(Math.random() * 30 + 20)   
-);
-scene.add(planet1);
-let planet2_Geometry = new THREE.SphereGeometry(2, 8, 6);
-let planet2_Material= createPhongMaterial( {
-   color: 0x80FFFF,
-   ambient: 0.0,
-   diffusivity: 0.5,
-   specularity: 1.0,
-   smoothness: 40.0,
-   flatShading:false,
-});
-let planet2 = new THREE.Mesh(planet2_Geometry, planet2_Material);
-planet2.position.set(
-  (Math.random() * 10) - 5,  
-  0,  
-  -(Math.random() * 30 + 20)  
-);
-scene.add(planet2);
-
-let planet3_Geometry = new THREE.SphereGeometry(2, 16, 16);
-let planet3_Material= createPhongMaterial( {
-   color: 0xB08040,
-   ambient: 0.0,
-   diffusivity: 1.0,
-   specularity: 1.0,
-   smoothness: 100.0,
-   flatShading:false,
-});
-let planet3 = new THREE.Mesh(planet3_Geometry, planet3_Material);
-planet3.position.set(
- (Math.random() * 10) - 5,  
- 0,   
- -(Math.random() * 30 + 20)    
-);
-scene.add(planet3);
+ let timer = new THREE.Clock();
 
 
-function createPhongMaterial(materialProperties) {
- const numLights = 1;
- let shape_color_representation = new THREE.Color(materialProperties.color);
- let shape_color = new THREE.Vector4(
-     shape_color_representation.r,
-     shape_color_representation.g,
-     shape_color_representation.b,
-     1.0
- );
-
-
- let vertexShader = `
-     precision mediump float;
-     const int N_LIGHTS = ${numLights};
-     uniform float ambient, diffusivity, specularity, smoothness;
-     uniform vec4 light_positions_or_vectors[N_LIGHTS];
-     uniform vec4 light_colors[N_LIGHTS];
-     uniform float light_attenuation_factors[N_LIGHTS];
-     uniform vec4 shape_color;
-     uniform vec3 squared_scale;
-     uniform vec3 camera_center;
-     varying vec3 N, vertex_worldspace;
-
-
-     // ***** PHONG SHADING HAPPENS HERE: *****
-     vec3 phong_model_lights(vec3 N, vec3 vertex_worldspace) {
-         vec3 E = normalize(camera_center - vertex_worldspace); // View direction
-         vec3 result = vec3(0.0); // Initialize the output color
-         for(int i = 0; i < N_LIGHTS; i++) {
-             // Calculate the vector from the surface to the light source
-             vec3 surface_to_light_vector = light_positions_or_vectors[i].xyz -
-                 light_positions_or_vectors[i].w * vertex_worldspace;
-             float distance_to_light = length(surface_to_light_vector); // Light distance
-             vec3 L = normalize(surface_to_light_vector); // Light direction
-            
-             // Phong uses the reflection vector R
-             vec3 R = reflect(-L, N); // Reflect L around the normal N
-            
-             float diffuse = max(dot(N, L), 0.0); // Diffuse term
-             float specular = pow(max(dot(R, E), 0.0), smoothness); // Specular term
-            
-             // Light attenuation
-             float attenuation = 1.0 / (1.0 + light_attenuation_factors[i] * distance_to_light * distance_to_light);
-            
-             // Calculate the contribution of this light source
-             vec3 light_contribution = shape_color.xyz * light_colors[i].xyz * diffusivity * diffuse
-                                     + light_colors[i].xyz * specularity * specular;
-             result += attenuation * light_contribution;
-         }
-         return result;
-     }
-
-
-     uniform mat4 model_transform;
-     uniform mat4 projection_camera_model_transform;
-
-
-     void main() {
-         gl_Position = projection_camera_model_transform * vec4(position, 1.0);
-         N = normalize(mat3(model_transform) * normal / squared_scale);
-         vertex_worldspace = (model_transform * vec4(position, 1.0)).xyz;
-     }
- `;
-
- let fragmentShader = `
-     precision mediump float;
-     const int N_LIGHTS = ${numLights};
-     uniform float ambient, diffusivity, specularity, smoothness;
-     uniform vec4 light_positions_or_vectors[N_LIGHTS];
-     uniform vec4 light_colors[N_LIGHTS];
-     uniform float light_attenuation_factors[N_LIGHTS];
-     uniform vec4 shape_color;
-     uniform vec3 camera_center;
-     varying vec3 N, vertex_worldspace;
-
-
-     // ***** PHONG SHADING HAPPENS HERE: *****
-     vec3 phong_model_lights(vec3 N, vec3 vertex_worldspace) {
-         vec3 E = normalize(camera_center - vertex_worldspace); // View direction
-         vec3 result = vec3(0.0); // Initialize the output color
-         for(int i = 0; i < N_LIGHTS; i++) {
-             // Calculate the vector from the surface to the light source
-             vec3 surface_to_light_vector = light_positions_or_vectors[i].xyz -
-                 light_positions_or_vectors[i].w * vertex_worldspace;
-             float distance_to_light = length(surface_to_light_vector); // Light distance
-             vec3 L = normalize(surface_to_light_vector); // Light direction
-            
-             // Phong uses the reflection vector R
-             vec3 R = reflect(-L, N); // Reflect L around the normal N
-            
-             float diffuse = max(dot(N, L), 0.0); // Diffuse term
-             float specular = pow(max(dot(R, E), 0.0), smoothness); // Specular term
-            
-             // Light attenuation
-             float attenuation = 1.0 / (1.0 + light_attenuation_factors[i] * distance_to_light * distance_to_light);
-            
-             // Calculate the contribution of this light source
-             vec3 light_contribution = shape_color.xyz * light_colors[i].xyz * diffusivity * diffuse
-                                     + light_colors[i].xyz * specularity * specular;
-             result += attenuation * light_contribution;
-         }
-         return result;
-     }
-
-
-     void main() {
-         // Compute an initial (ambient) color:
-         vec4 color = vec4(shape_color.xyz * ambient, shape_color.w);
-         // Compute the final color with contributions from lights:
-         color.xyz += phong_model_lights(normalize(N), vertex_worldspace);
-         gl_FragColor = color;
-     }
- `;
- const uniforms = {
-     ambient: { value: materialProperties.ambient },
-     diffusivity: { value: materialProperties.diffusivity },
-     specularity: { value: materialProperties.specularity },
-     smoothness: { value: materialProperties.smoothness },
-     shape_color: { value: shape_color },
-     squared_scale: { value: new THREE.Vector3(1.0, 1.0, 1.0) },
-     camera_center: { value: new THREE.Vector3() },
-     model_transform: { value: new THREE.Matrix4() },
-     projection_camera_model_transform: { value: new THREE.Matrix4() },
-     light_positions_or_vectors: { value: [] },
-     light_colors: { value: [] },
-     light_attenuation_factors: { value: [] }
- };
-
- return new THREE.ShaderMaterial({
-     vertexShader: vertexShader,
-     fragmentShader: fragmentShader,
-     uniforms: uniforms
- });
-}
-function updatePlanetMaterialUniforms(planet) {
- const material = planet.material;
- if (!material.uniforms) return;
-
-
- const uniforms = material.uniforms;
-
-
- const numLights = 1;
- const lights = scene.children.filter(child => child.isLight).slice(0, numLights);
- if (lights.length < numLights) {
-     console.warn(`Expected ${numLights} lights, but found ${lights.length}. Padding with default lights.`);
- }
- planet.updateMatrixWorld();
- camera.updateMatrixWorld();
-
-
- uniforms.model_transform.value.copy(planet.matrixWorld);
- uniforms.projection_camera_model_transform.value.multiplyMatrices(
-     camera.projectionMatrix,
-     camera.matrixWorldInverse
- ).multiply(planet.matrixWorld);
-
- uniforms.camera_center.value.setFromMatrixPosition(camera.matrixWorld);
-
- const scale = planet.scale;
- uniforms.squared_scale.value.set(
-     scale.x * scale.x,
-     scale.y * scale.y,
-     scale.z * scale.z
- );
-
- uniforms.light_positions_or_vectors.value = [];
- uniforms.light_colors.value = [];
- uniforms.light_attenuation_factors.value = [];
-
-
- for (let i = 0; i < numLights; i++) {
-     const light = lights[i];
-     if (light) {
-         let position = new THREE.Vector4();
-         if (light.isDirectionalLight) {
-             const direction = new THREE.Vector3(0, 0, -1).applyQuaternion(light.quaternion);
-             position.set(direction.x, direction.y, direction.z, 0.0);
-         } else if (light.position) {
-             position.set(light.position.x, light.position.y, light.position.z, 1.0);
-         } else {
-             position.set(0.0, 0.0, 0.0, 1.0);
-         }
-         uniforms.light_positions_or_vectors.value.push(position);
-
-         const color = new THREE.Vector4(light.color.r, light.color.g, light.color.b, 1.0);
-         uniforms.light_colors.value.push(color);
-
-         let attenuation = 0.0;
-         if (light.isPointLight || light.isSpotLight) {
-             const distance = light.distance || 1000.0; 
-             attenuation = 1.0 / (distance * distance);
-         } else if (light.isDirectionalLight) {
-             attenuation = 0.0; 
-         }
-         const intensity = light.intensity !== undefined ? light.intensity : 1.0;
-         attenuation *= intensity;
-
-
-         uniforms.light_attenuation_factors.value.push(attenuation);
-     } else {
-         uniforms.light_positions_or_vectors.value.push(new THREE.Vector4(0.0, 0.0, 0.0, 0.0));
-         uniforms.light_colors.value.push(new THREE.Vector4(0.0, 0.0, 0.0, 1.0));
-         uniforms.light_attenuation_factors.value.push(0.0);
-     }
- }
-}
-
-
- function createPlanet(color) {
-   const sphereGeometry = new THREE.SphereGeometry(2, 16, 16);
-   const sphereMaterial = new THREE.MeshBasicMaterial({ color: color });
-   const planet = new THREE.Mesh(sphereGeometry, sphereMaterial);
+  // add a series of pipe and ring obstacles that the rocket must navigate through
+  const gameScale = 0.35;
   
-   // Random initial position
-   planet.position.set(
-     (Math.random() * 10) - 5,  // Random x (-5 to 5)
-     0,   //don't move the planets up and down on the y axis (stays constant)
-     -(Math.random() * 30 + 20)    // Random z (between 20 and 50)
-   );
+  const pipeTexture = new THREE.TextureLoader().load('../assets/pipetex3.jpg');
+  pipeTexture.wrapS = THREE.RepeatWrapping;
+  pipeTexture.wrapT = THREE.RepeatWrapping;
+  pipeTexture.repeat.rotateAround(0.5, 0.5, Math.PI / 2);
+
+  const pipeCapTexture = new THREE.TextureLoader().load('../assets/pipetex3.jpg');
+  pipeCapTexture.wrapS = THREE.RepeatWrapping;
+  pipeCapTexture.wrapT = THREE.RepeatWrapping;
+  pipeCapTexture.repeat.rotateAround(0.5, 0.5, Math.PI / 2);
+
+  const pipeGeometry = new THREE.CylinderGeometry(gameScale*2, gameScale*2, gameScale*400, 32);
+  const pipeMaterial = new THREE.MeshStandardMaterial({ map: pipeTexture, roughness: 0.3, metalness: 1.0 });
+
+  const HIGH_SIDE = 70;
+  const LOW_SIDE = -80;
   
-   scene.add(planet);
-   return planet;
- }
+  let upperPipes = [];
+  let lowerPipes = [];
+  let rings = [];
 
+  let upperPhases = [];
+  let lowerPhases = [];
+  let ringPhases = [];
 
- // Create multiple planets
- let planets = [planet1, planet2, planet3];
+  const lowerPipeCapY = -70;
 
+  const upperPipeCapY = 70; // number closer to 0 brings the cap up
 
- camera.position.z = 10;
- let moveSpeed = 0.3;
- const sphereRadius = 2; // Planet radius
+  const startingPositionOfPipes = 20; // larger number starts pipes from farther to the right
 
+  function setupPipesAndRings()
+  {
+    let pipeLocationx = startingPositionOfPipes; 
 
- // Event listeners for movement using arrow keys
- document.addEventListener('keydown', (event) => {
-   switch (event.key) {
-     case 'ArrowUp':
-      Spaceship.position.y += moveSpeed; 
-      spaceship.position.y += moveSpeed;
-      wing1.position.y += moveSpeed;
-      wing2.position.y += moveSpeed;
-      break;
-     case 'ArrowDown': 
-      Spaceship.position.y -= moveSpeed;
-      spaceship.position.y -= moveSpeed;
-      wing1.position.y -= moveSpeed;
-      wing2.position.y -= moveSpeed; 
-      break;
-     case 'ArrowLeft': 
-      Spaceship.position.x -= moveSpeed;
-      spaceship.position.x -= moveSpeed;
-      wing1.position.x -= moveSpeed;
-      wing2.position.x -= moveSpeed;  
-      break;
-     case 'ArrowRight': 
-      Spaceship.position.x += moveSpeed; 
-      spaceship.position.x += moveSpeed;
-      wing1.position.x += moveSpeed;
-      wing2.position.x += moveSpeed; 
-      break;
-   }
- });
-
- 
-
-
- // Function to find the closest point on the spaceship (AABB) to the planet
- function getClosestPoint(spaceship, spherePos) {
-  const spaceshipMin = spaceship.position.clone().subScalar(0.5); // Half-size of box is 0.5
-  const spaceshipMax = spaceship.position.clone().addScalar(0.5);
-
-
-  return new THREE.Vector3(
-    Math.max(spaceshipMin.x, Math.min(spherePos.x, spaceshipMax.x)),
-    Math.max(spaceshipMin.y, Math.min(spherePos.y, spaceshipMax.y)),
-    Math.max(spaceshipMin.z, Math.min(spherePos.z, spaceshipMax.z))
-  );
- }
- function getClosestPointWing(wing, spherePos) {
-  const spaceshipMin = spaceship.position.clone().subScalar(0.25); // Half-size of box is 0.5
-  const spaceshipMax = spaceship.position.clone().addScalar(0.25);
-
-
-  return new THREE.Vector3(
-    Math.max(spaceshipMin.x, Math.min(spherePos.x, spaceshipMax.x)),
-    Math.max(spaceshipMin.y, Math.min(spherePos.y, spaceshipMax.y)),
-    Math.max(spaceshipMin.z, Math.min(spherePos.z, spaceshipMax.z))
-  );
-}
-
-function checkCollision() {
-  let collisionDetected = false;
-
-
-  for (let planet of planets) {
-    const closestPoint = getClosestPoint(spaceship, planet.position);
-    const distance = closestPoint.distanceTo(planet.position);
-
-    const closestPointWing1 = getClosestPoint(wing1, planet.position);
-    const distanceWing1 = closestPointWing1.distanceTo(planet.position);
-
-    const closestPointWing2 = getClosestPoint(wing2, planet.position);
-    const distanceWing2 = closestPointWing2.distanceTo(planet.position);
-
-    if (distance < sphereRadius|| distanceWing1 < sphereRadius || distanceWing2 < sphereRadius) {
-      collisionDetected = true;
-      break;
-    }
-  }
-
-
-    if (collisionDetected) {
-      console.log("Collision detected!");
-      //spaceship.material.color.set(0xff0000); 
-      const texture = new THREE.TextureLoader().load('/assets/Game-Over (1).png');
-      const geometry = new THREE.BoxGeometry( 4, 4, 4);
-      const material = new THREE.MeshBasicMaterial( { map: texture } );
-      const GameOverMesh = new THREE.Mesh(geometry, material);
-      GameOverMesh.position.set(0,3,12);
-      scene.add(GameOverMesh);
-      for(let planet of planets){
-        planet.visible=!visibility;
+    for (let i = 0; i < 10; i++)
+    {
+      let upperPipe = new THREE.Mesh(pipeGeometry, pipeMaterial);
+      let upperPipeLocation = HIGH_SIDE - 2 * Math.random();
+      upperPipe.position.set(pipeLocationx, upperPipeLocation, pipeZPosition); // upperPipeLocation + 60
+      upperPipe.rotateZ(Math.PI);
+  
+      let pipeCapGeometry = new THREE.CylinderGeometry(gameScale*2.6, gameScale*2.6, gameScale*2, 32);
+      let pipeCapMaterial = new THREE.MeshStandardMaterial({ map: pipeCapTexture, roughness: 0.3, metalness: 1.0 });
+      let upperPipeCap = new THREE.Mesh(pipeCapGeometry, pipeCapMaterial);
+      upperPipeCap.position.set(0, upperPipeCapY, 0);
+      upperPipe.add(upperPipeCap);
+  
+      
+      let lowerPipe = new THREE.Mesh(pipeGeometry, pipeMaterial);
+      let lowerPipeLocation = LOW_SIDE + 2 * Math.random();
+      lowerPipe.position.set(pipeLocationx, lowerPipeLocation, pipeZPosition); // lowerPipeLocation -60
+      lowerPipe.rotation.y = Math.PI;
+      lowerPipe.rotateZ(Math.PI);
+  
+      let lowerPipeCap = new THREE.Mesh(pipeCapGeometry, pipeCapMaterial);
+      lowerPipeCap.position.set(0, lowerPipeCapY, 0); // lowerPipeLocation + (lowerPipeCapY * -1*lowerPipeLocation)
+      lowerPipe.add(lowerPipeCap);
+      
+  
+      let ring = new THREE.Mesh(new THREE.TorusGeometry(6, 0.5, 16, 100), new THREE.MeshStandardMaterial({ map: pipeTexture, roughness: 0.3, metalness: 1.0 }));
+      let ringSide = LOW_SIDE;
+      if (Math.random() > 0.5)
+      {
+        ringSide = HIGH_SIDE;
       }
-      start=false;
-    } 
+      ring.position.set(pipeLocationx, 0, pipeZPosition);
+      ring.rotation.x = Math.PI / 2;
+      // store the high or low result in the ring
+      ring.userData.positionType = ringSide === HIGH_SIDE ? HIGH_SIDE : LOW_SIDE;
+  
+  
+      pipeLocationx += (16 + Math.random());
+  
+      upperPipes.push(upperPipe);
+      lowerPipes.push(lowerPipe);
+      rings.push(ring);
+      scene.add(lowerPipe);
+      scene.add(upperPipe);
+      scene.add(ring);
+  
+    }
   }
 
- let planetSpeed=0.2;
- function animate() {
-   requestAnimationFrame(animate);
-  if(start){
-   planets.forEach(planet => {
-     planet.position.z += planetSpeed; 
-     checkCollision();
-     if (planet.position.z > 10) {
-       planet.position.set(
-         (Math.random() * 10) - 5,  
-         0,  
-         -(Math.random() * 30 + 20)    
-       );
-     }
-     checkCollision();
-   });
-    planetSpeed+=.00005;
-    checkCollision();
-  }
-  for(let planet of planets){
-     updatePlanetMaterialUniforms(planet);
-  }
-   renderer.render(scene, camera);
- }
- 
- animate();
- return scene;
+  setupPipesAndRings();
 
-}
+  for (let i = 0; i < upperPipes.length; i++)
+  {
+    upperPhases.push(Math.random() * Math.PI);
+    lowerPhases.push(Math.random() * Math.PI);
+    ringPhases.push(Math.random() * Math.PI);
+  }
 
-let start=false;
-let visibility=true;
-window.addEventListener('keydown', onKeyPress); 
-function onKeyPress(event) {
-    switch (event.key) {
-        case 's': 
-            start = !start;
-            break;
-        default:
-            console.log(`Key ${event.key} pressed`);
+  let pausePipeFlow = false;
+
+  // Can adjust the acceleration and verticalImpulse values to change gravity and rocket impulse effect
+  let acceleration    = 0.009;//0.003;
+  let verticalImpulse = 1.0;//0.9;//0.5;
+  const obstacleHorizontalMovementSpeed = 0.4; // make this number bigger to "make the rocket fly to the right" faster (makes the obstacles shift faster)
+
+  let velocityY = 0;
+  let gameOverAlerted = false;
+  alert("Mission: Get through the minefield without having two collisions! Press the space bar to go! ");
+
+  function animate()
+  {
+    requestAnimationFrame(animate);
+    //Spaceship.updateMatrixWorld();
+    
+    //console.log(start);
+    if (!gameComplete && !gameOverAlerted&& start)
+    {
+        // Get the elapsed time
+        let elapsedTime = timer.getElapsedTime();
+        //updateFlameEffect(elapsedTime);
+
+        // keep the rocket falling
+        velocityY -= acceleration;
+
+        if (Spaceship)
+        {
+            Spaceship.position.y += velocityY - 0.13;
+            detector.position.y += velocityY - 0.13;
+            detector2.position.y += velocityY - 0.13;
+        }
+        
+        // the pipes and rings will be moving from right to left while the rocket navigates through
+        // the pipes and rings can stop moving to the left when the left arrow button is pressed in case we want to wait for a safe time to proceed
+        if (!pausePipeFlow)
+        {
+            // flow the pipes and rings to the left
+            for (let i = 0; i < upperPipes.length; i++)
+            {
+                upperPipes[i].position.x -= gameScale*obstacleHorizontalMovementSpeed;
+                lowerPipes[i].position.x -= gameScale*obstacleHorizontalMovementSpeed;
+                     rings[i].position.x -= gameScale*obstacleHorizontalMovementSpeed;
+            }
+        }
+
+        // oscillate the pipes up and down a small amount
+        const pipeOscFreq = 0.5;
+        const pipeOscAmpl = 0.05;
+        const ringOscFreq = 1.0;
+        const ringOscAmpl = 0.1;
+        for (let i = 0; i < upperPipes.length; i++)
+        {
+            if ((upperPipes[i].position.y + pipeOscAmpl * Math.sin(elapsedTime * pipeOscFreq - upperPhases[i])) > (lowerPipes[i].position.y + pipeOscAmpl * Math.sin(elapsedTime * pipeOscFreq - lowerPhases[i]) + 140.5))
+            {
+                upperPipes[i].position.y += pipeOscAmpl * Math.sin(elapsedTime * pipeOscFreq - upperPhases[i]);
+                lowerPipes[i].position.y += pipeOscAmpl * Math.sin(elapsedTime * pipeOscFreq - lowerPhases[i]);
+            }
+            else
+            {
+                upperPipes[i].position.y += pipeOscAmpl * Math.sin(elapsedTime * pipeOscFreq - upperPhases[i]);
+                lowerPipes[i].position.y += pipeOscAmpl * Math.sin(elapsedTime * pipeOscFreq - upperPhases[i]);
+            }
+            
+            if (rings[i].userData.positionType == HIGH_SIDE)
+            {
+                // high side rings go down
+                rings[i].position.y += ringOscAmpl * -1 * Math.sin(elapsedTime * ringOscFreq - ringPhases[i]);
+            }
+            else {
+                rings[i].position.y += ringOscAmpl * Math.sin(elapsedTime * ringOscFreq - ringPhases[i]);
+            }
+            
+        }
+        
+        if (Spaceship)
+        {
+            // check if the rocket fell off the map
+            if (Spaceship.position.y < -29 || Spaceship.position.y > 29 && !gameOverAlerted)
+                {
+                    //gameOver();
+                    alert("Game Over!");
+                    gameOverAlerted = true;
+                    //return;
+                }
+        
+                // check if rocket.position.x is past the last marker
+                if (Spaceship.position.x > (lowerPipes[9].position.x + 10))
+                {
+                    // done! Game complete!
+                    gameComplete = true;
+                    alert("Victory!");
+                }
+                checkCollision();
+        }
 
     }
+
+
+    renderer.render(scene, camera);
+ }
+ animate();
+
+
+  const redPlanetTexture = new THREE.TextureLoader().load('../assets/orange.png');
+  redPlanetTexture.wrapS = THREE.RepeatWrapping;
+  redPlanetTexture.wrapT = THREE.RepeatWrapping;
+  const redPlanetGeo = new THREE.SphereGeometry(2, 300, 900);
+  const redPlanetMat = new THREE.MeshStandardMaterial({ map: redPlanetTexture, roughness: 0.9, metalness: 0.0 });
+  const planet1 = new THREE.Mesh(redPlanetGeo, redPlanetMat);
+  planet1.position.set(100, -60, -600);
+  planet1.scale.set(20, 20, 20);
+  scene.add(planet1);
+  
+   // Create the second planet
+  const bluePlanetTexture = new THREE.TextureLoader().load('../assets/earth.png');
+  bluePlanetTexture.wrapS = THREE.RepeatWrapping;
+  bluePlanetTexture.wrapT = THREE.RepeatWrapping;
+  const bluePlanetGeo = new THREE.SphereGeometry(2, 300, 900);
+  const bluePlanetMat = new THREE.MeshStandardMaterial({ map: bluePlanetTexture, roughness: 0.9, metalness: 0.0 });
+  const planet2 = new THREE.Mesh(bluePlanetGeo, bluePlanetMat);
+  planet2.position.set(-100, -120, -600);
+  planet2.scale.set(20, 20, 20);
+  scene.add(planet2);
+
+
+  scene.fog = new THREE.Fog(0x000000, 50, 900);
+
+  function createDistantStarField() {
+      const starGeometry = new THREE.BufferGeometry();
+      const starMaterial = new THREE.PointsMaterial({
+          color: 0xffffff,
+          size: 1, 
+          transparent: true,
+          fog: false
+      });
+  
+      const starVertices = [];
+      for (let i = 0; i < 5000; i++) { 
+          const x = (Math.random() - 0.5) * 2000; 
+          const y = (Math.random() - 0.5) * 2000; 
+          const z = Math.min((Math.random() - 0.5) * 900 - 700, -700);
+          starVertices.push(x, y, z);
+      }
+  
+      starGeometry.setAttribute('position', new THREE.Float32BufferAttribute(starVertices, 3));
+      const stars = new THREE.Points(starGeometry, starMaterial);
+      stars.userData.isStarField = true;
+      return stars;
+  }
+  
+
+  let collisionCounter = 0;
+
+  const distantStars = createDistantStarField();
+  scene.add(distantStars);
+
+ 
+   // Event listeners for movement using arrow keys
+  document.addEventListener('keydown', (event) => {
+    if (!gameComplete)
+    {
+      switch (event.key) {
+        case 'ArrowUp': 
+        velocityY = gameScale * verticalImpulse;
+        break;
+        case 'ArrowDown':
+        break;
+        case 'ArrowLeft':
+                          pausePipeFlow = true;
+                          break;
+
+        case 'ArrowRight':
+                          pausePipeFlow = false; break;
+        case ' ' :
+                velocityY = gameScale * verticalImpulse; 
+                break;
+      }
+
+      if (Spaceship)
+      {
+        checkCollision();
+      }
+    }
+  });
+
+let collisionTime = 0;
+//FUNCTIONS for collsion
+function isCylinderThroughRing(detector, ring) {
+    const distanceX = Math.abs(detector.position.x - ring.position.x);
+    const ringInnerRadius = ring.geometry.parameters.radius - ring.geometry.parameters.tube;
+    if (distanceX <= ringInnerRadius-(2)) {//2 for cylender radius
+      //console.log(`Spaceship went through ring`);
+      return true;
+    }else{
+      return false;
+    }
+}
+function isBoxThroughRing(detector, ring) {
+    const distanceX = Math.abs(detector.position.x - ring.position.x);
+    const ringInnerRadius = ring.geometry.parameters.radius - ring.geometry.parameters.tube;
+    if (distanceX <= ringInnerRadius-(1)) {//1 for half the distange from center of box
+      //console.log(`Spaceship went through ring`);
+      return true;
+    }else{
+      return false;
+    }
+  
+}
+
+function getBoundingBox(mesh) {
+  const box = new THREE.Box3().setFromObject(mesh);
+  return box;
+}
+function detectCollision(detector, pipes) {
+  const detectorBox = getBoundingBox(detector);
+  for (let i = 0; i < pipes.length; i++) {
+      const upperPipeBox = getBoundingBox(upperPipes[i]);
+      const lowerPipeBox = getBoundingBox(lowerPipes[i]);
+      if (detectorBox.intersectsBox(upperPipeBox) || detectorBox.intersectsBox(lowerPipeBox)) {
+          console.log(`Collision detected with pipe pair ${i}!`);
+          return true;
+      }
+  }
+  return false;
+}
+
+function checkCollisionWithToruses(mesh, rings) {
+  const shipAABB = getBoundingBox(mesh);
+
+  for (let i = 0; i < rings.length; i++) {
+      const ringAABB = getBoundingBox(rings[i]);
+
+      if (shipAABB.intersectsBox(ringAABB)&&!isCylinderThroughRing(detector,rings[i])&&!isBoxThroughRing(detector2,rings[i])) {
+          console.log(`Collision detected with ring ${i}!`);
+          return true; 
+      }
+  }
+
+  return false; 
+}
+
+
+  function checkCollision()
+  {
+    if (!Spaceship)
+    {
+        return;
+    }
+//THIS WAS ADDED: basically uses the functions I made with AABB bounding box mesh for upper and lower pipes and the mesh object I custom made because the GLTF object center was really off
+    let collisionDetected = false;
+    if(detectCollision(detector,upperPipes)||detectCollision(detector2,upperPipes)){
+      collisionDetected=true;
+    }
+    //ALSO ADDED: uses bounded box and also checks if the object is going through the ring
+    if(checkCollisionWithToruses(detector2,rings)||checkCollisionWithToruses(detector,rings)){
+      collisionDetected=true;
+    }
+    
+
+
+    
+    
+     if (collisionDetected) {
+      console.log("Collision detected!");
+      // rocket turns red on collision
+      if (collisionTime == 0.0)
+      {
+        ++collisionCounter;
+        collisionTime = timer.getElapsedTime();
+      }
+
+      if ((timer.getElapsedTime() - collisionTime) > 2) // 2 second break after collision
+      {
+        ++collisionCounter;
+      }        
+
+      if (Spaceship)
+      {
+         Spaceship.traverse((child) => {
+            if (child.isMesh) {
+                child.material.color.set(0xff0000);
+            }
+         })
+      }
+
+      if (collisionCounter >= 2)
+      {
+        collisionCounter = 0;
+        deleteAllPipesAndRings();
+        setupPipesAndRings();
+        collisionTime = 0.0;
+      }
+    } else {
+      if (Spaceship)
+        {
+           Spaceship.traverse((child) => {
+              if (child.isMesh) {
+                  child.material.color.set(0xffffff);
+              }
+           })
+        }
+    }
+  }
+
+  // this gets called after multiple collisions
+  function deleteAllPipesAndRings()
+  {
+    for (let i = 9; i >= 0; --i)
+      {
+        scene.remove(upperPipes[i]);
+        scene.remove(lowerPipes[i]);
+        scene.remove(rings[i]);
+
+        upperPipes.pop();
+        lowerPipes.pop();
+        rings.pop();
+      }
+  }
+
+  // provide an initial impulse
+  const spacebarEvent = new KeyboardEvent('keydown', { key: ' ', code: "Space", keyCode: 32, which: 32});
+  document.dispatchEvent(spacebarEvent);
+  document.dispatchEvent(spacebarEvent);
+
+  return scene;
 }
 
 
