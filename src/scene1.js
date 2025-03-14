@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
 let clock = new THREE.Clock();
 let time = clock.getElapsedTime();
@@ -27,59 +28,13 @@ export function createStarField() {
 }
 
 
-function createSunMaterial() {
-    const textureLoader = new THREE.TextureLoader();
-    const noiseTexture = textureLoader.load('assets/noise.jpg'); 
-
-    return new THREE.ShaderMaterial({
-        uniforms: {
-            time: { value: 0 },
-            sunColor: { value: new THREE.Color(0xffcc00) }, 
-            noiseTexture: { value: noiseTexture }, 
-            emissive: { value: new THREE.Color(0xffaa00) }  
-        },
-        vertexShader: `
-            varying vec2 vUv;
-            uniform float time;
-            void main() {
-                vUv = uv;
-
-                float pulse = sin(time * 2.0 + length(position) * 0.3) * 2.5;
-                vec3 newPosition = position + normal * pulse;
-
-                gl_Position = projectionMatrix * modelViewMatrix * vec4(newPosition, 1.0);
-            }
-        `,
-        fragmentShader: `
-            varying vec2 vUv;
-            uniform float time;
-            uniform vec3 sunColor;
-            uniform vec3 emissive;
-            uniform sampler2D noiseTexture;
-
-            void main() {
-               
-                vec4 noiseTex = texture2D(noiseTexture, vUv + time * 0.02);
-                float noise = noiseTex.r;
-
-                if (noise < 0.1) {
-                    noise = 0.5 + 0.5 * sin(time * 2.0);
-                }
-
-                vec3 finalColor = mix(sunColor, emissive, noise * 0.6);
-                
-                gl_FragColor = vec4(finalColor, 1.0);
-            }
-        `,
-        transparent: false
-    });
-}
-
 // Moon texture
 const textureLoader = new THREE.TextureLoader();
 const moonTexture = textureLoader.load('assets/moon_bump.jpg');  
 const displacementMap = textureLoader.load('assets/moon_map.jpg'); 
 const normalMap = textureLoader.load('assets/moon_normal.jpg');
+
+
 
 // Main Hub Scene
 
@@ -131,6 +86,23 @@ export function createScene1(renderer, camera) {
     let main_hub_planet = new THREE.Mesh(main_hub_planet_Geometry, main_hub_planet_Material);
     main_hub_planet.position.set(-2, 0, 0);
     scene.add(main_hub_planet);
+
+    let Spaceship;
+    const spaceship_loader = new GLTFLoader().setPath('assets/hull_spaceship_gltf/');
+    spaceship_loader.load('scene.gltf', (gltf) => {
+    const mesh= gltf.scene;
+    Spaceship=mesh;
+    //Spaceship = new gltf.scene;
+    Spaceship.scale.set(0.1,0.1,0.1);
+    Spaceship.position.set(2,0,0);
+    Spaceship.rotation.set(3.14/8, -3.14/2, 0);
+    //console.log(Spaceship.matrix);
+    scene.add(Spaceship);
+
+    // directionalLight.target = Spaceship;
+    // scene.add(directionalLight.target);
+  });
+
 
     const main_hub_spaceship_geometry = new THREE.BoxGeometry(1, 1, 1);
     const main_hub_spaceship_material = new THREE.MeshBasicMaterial({ color: 0x00ff00 });
