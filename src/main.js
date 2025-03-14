@@ -5,7 +5,7 @@ import { createScene2 } from './scene2.js';
 import { createScene3} from './scene3.js';
 //import { createScene2Pt5 } from './scene2Pt5.js';
 
-let bulletCount = 2; // Initialize bullet count
+let bulletCount = 70; // Initialize bullet count
 const bulletCounterElement = document.createElement('div');
 bulletCounterElement.style.position = 'absolute';
 bulletCounterElement.style.top = '10px';
@@ -76,8 +76,8 @@ window.addEventListener('click', (event) => {
 
     if(activeScene === scene1)  // Main Hub
     {
-        
-        bulletCount = 30;
+        bulletCounterElement.innerHTML = ``;   
+        bulletCount = 70;
         const intersects = raycaster.intersectObjects(scene1.children);
         
         if (intersects.length > 0) 
