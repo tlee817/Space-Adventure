@@ -34,6 +34,9 @@ export function createScene2(renderer, camera) {
     const pointLight = new THREE.PointLight(0xFFFFFF, 5, 25, 0.5);
     pointLight.position.set(0, 0, 0);
     scene.add(pointLight);
+    const pointLight2 = new THREE.PointLight(0xFFFFFF, 5, 5, 0.5);
+    pointLight2.position.set(0, 0, 23);
+    scene.add(pointLight2);
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.02); //0.02
     scene.add(ambientLight);
 
@@ -44,7 +47,7 @@ export function createScene2(renderer, camera) {
      const mesh= gltf.scene;
      gun=mesh;
      gun.scale.set(0.2,0.2,0.2);
-     gun.position.set(0, -2, 8);
+     gun.position.set(0, -2, 23);
      //console.log(gun.matrix);
      scene.add(gun);
     });

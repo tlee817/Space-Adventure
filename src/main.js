@@ -5,6 +5,15 @@ import { createScene2 } from './scene2.js';
 import { createScene3} from './scene3.js';
 import { createScene2Pt5 } from './scene2Pt5.js';
 
+let bulletCount = 2; // Initialize bullet count
+const bulletCounterElement = document.createElement('div');
+bulletCounterElement.style.position = 'absolute';
+bulletCounterElement.style.top = '10px';
+bulletCounterElement.style.left = '10px';
+bulletCounterElement.style.color = 'white';
+bulletCounterElement.style.fontSize = '20px';
+bulletCounterElement.style.fontFamily = 'Courier';
+
 // Renderer 
 const renderer = new THREE.WebGLRenderer();
 renderer.setSize(window.innerWidth, window.innerHeight);
@@ -15,6 +24,10 @@ const camera = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerH
 camera.position.set(0, 5, 20);
 camera.lookAt(0, 0, 0);
 
+const camera2 = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera2.position.set(0, 5, 40);
+camera2.lookAt(0, 0, 0);
+
 // Control
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.target.set(0, 0, 0);
@@ -24,7 +37,7 @@ controls.maxDistance = 50;
 
 // Create Scenes
 const { scene: scene1, main_hub_planet, main_hub_spaceship, sun } = createScene1(renderer,camera);
-const scene2 = createScene2(renderer, camera);
+const scene2 = createScene2(renderer, camera2);
 
 let activeScene = scene1;
 
@@ -63,6 +76,7 @@ window.addEventListener('click', (event) => {
 
     if(activeScene === scene1)  // Main Hub
     {
+        bulletCount = 30;
         const intersects = raycaster.intersectObjects(scene1.children);
         
         if (intersects.length > 0) 
@@ -85,15 +99,22 @@ window.addEventListener('click', (event) => {
                 activeScene = scene2Pt5;
             }
         }
-    }else if(activeScene===scene2)  // Planet Shooting
+    }else if(activeScene===scene2)
     {
-
+        document.body.appendChild(bulletCounterElement);
+        bulletCount--; 
+        bulletCounterElement.innerHTML = `Bullets: ${bulletCount}`;
+        if (bulletCount <= 0) {
+            activeScene = scene1;
+            bulletCounterElement.innerHTML = ``;
+            return;
+        }
         const mouse = new THREE.Vector2(
             (event.clientX / window.innerWidth) * 2 - 1,
             -(event.clientY / window.innerHeight) * 2 + 1
         );
         const raycaster = new THREE.Raycaster();
-        raycaster.setFromCamera(mouse, camera);
+        raycaster.setFromCamera(mouse, camera2);
         const targetPosition = new THREE.Vector3();
         raycaster.ray.at(50, targetPosition);
         
@@ -107,7 +128,7 @@ window.addEventListener('click', (event) => {
         const bulletGeometry = new THREE.SphereGeometry(0.2, 8, 8);
         const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffb300 });
         const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
-        bullet.position.copy(camera.position);
+        bullet.position.set(0, -2, 18);
 
         const direction = new THREE.Vector3().subVectors(targetPosition, bullet.position).normalize();
         bullet.userData.velocity = direction.multiplyScalar(2);
@@ -160,7 +181,7 @@ window.addEventListener('click', (event) => {
                 }
             }
             
-            if (bullet.position.length() > 100) {
+            if (bullet.position.length() > 50) {
                 scene2.remove(bullet);
                 scene2.remove(bullet.userData.light);
                 return;
@@ -225,6 +246,9 @@ function animate() {
     }
 
     renderer.render(activeScene, camera);
+    if(activeScene===scene2){
+        renderer.render(activeScene, camera2);
+    }
 }
 
 animate();
