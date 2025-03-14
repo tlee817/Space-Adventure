@@ -25,7 +25,6 @@ export function createStarField() {
 }
 
 export function createScene2(renderer, camera) {
-    // document.addEventListener("click", shootBullet);
     const scene = new THREE.Scene();
     const star = createStarField();
     scene.add(star);
@@ -50,6 +49,21 @@ export function createScene2(renderer, camera) {
      gun.position.set(0, -2, 23);
      //console.log(gun.matrix);
      scene.add(gun);
+    });
+
+    const mouse = new THREE.Vector2();
+    const raycaster = new THREE.Raycaster();
+    window.addEventListener('mousemove', (event) => {
+        if (!gun) return;
+
+        mouse.x = (event.clientX / window.innerWidth) * 2 - 1;
+        mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
+
+        raycaster.setFromCamera(mouse, camera);
+        const targetPosition = new THREE.Vector3();
+        raycaster.ray.at(30, targetPosition);
+
+        gun.lookAt(targetPosition);
     });
 
 
