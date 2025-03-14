@@ -25,8 +25,7 @@ camera.position.set(0, 5, 20);
 camera.lookAt(0, 0, 0);
 
 const camera2 = new THREE.PerspectiveCamera(35, window.innerWidth / window.innerHeight, 0.1, 1000);
-//camera2.position.set(0, 5, 40);
-camera2.position.set(0, 0, 40);
+camera2.position.set(0, 5, 40);
 camera2.lookAt(0, 0, 0);
 
 // Control
@@ -77,7 +76,7 @@ window.addEventListener('click', (event) => {
 
     if(activeScene === scene1)  // Main Hub
     {
-        bulletCount = 100;
+        bulletCount = 30;
         const intersects = raycaster.intersectObjects(scene1.children);
         
         if (intersects.length > 0) 
@@ -86,7 +85,6 @@ window.addEventListener('click', (event) => {
 
             if (clickedObject === main_hub_planet) 
             {
-                //scene2 = createScene2(renderer, camera2);
                 activeScene = scene2;
                 controls.enabled = false; 
             }else if (clickedObject === main_hub_spaceship) 
@@ -130,7 +128,7 @@ window.addEventListener('click', (event) => {
         const bulletGeometry = new THREE.SphereGeometry(0.2, 8, 8);
         const bulletMaterial = new THREE.MeshBasicMaterial({ color: 0xffb300 });
         const bullet = new THREE.Mesh(bulletGeometry, bulletMaterial);
-        bullet.position.set(0, -2, 23);
+        bullet.position.set(0, -2, 18);
 
         const direction = new THREE.Vector3().subVectors(targetPosition, bullet.position).normalize();
         bullet.userData.velocity = direction.multiplyScalar(2);
