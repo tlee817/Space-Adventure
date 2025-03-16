@@ -19,7 +19,8 @@
   },
   "homepage": "https://github.com/tlee817/Space-Adventure#readme",
   "dependencies": {
-    "three": "^0.173.0"
+    "three": "^0.173.0",
+    "three-gpu-pathtracer": "^0.0.23"
   },
   "devDependencies": {
     "vite": "^6.2.1"

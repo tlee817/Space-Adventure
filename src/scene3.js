@@ -1,8 +1,52 @@
+import {
+  Sphere,
+	Box3,
+	MeshStandardMaterial,
+  CylinderGeometry,
+	DoubleSide,
+	NoToneMapping,
+	Mesh,
+	Scene,
+	LoadingManager,
+	PerspectiveCamera,
+  Color, 
+	OrthographicCamera,
+	PlaneGeometry,
+	EquirectangularReflectionMapping,
+	WebGLRenderer,
+	MeshPhysicalMaterial,
+	ACESFilmicToneMapping,
+} from 'three';
+
 import * as THREE from 'three';
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 
+import { WebGLPathTracer, PathTracingRenderer, PhysicalPathTracingMaterial, PathTracingSceneGenerator } from 'three-gpu-pathtracer';
+
+// the following custom addon was essential to be added for ray tracing:
+// npm install three-gpu-pathtracer
+
+
 export function createScene3(renderer, camera) {
+    // add the ray tracing path tracer, when given the renderer:
+    let webGlPathTracer = new WebGLPathTracer( renderer );
+    webGlPathTracer.physicallyCorrectLights = true; // physically correct ligthing is essential
+    webGlPathTracer.tiles.set( 3, 3 );  // determines how demanding the computations will compose of
+    webGlPathTracer.multipleImportanceSampling = true;
+    webGlPathTracer.transmissiveBounces = 10; // sets the number of light ray bounces/reflections
+
+    // path tracing renderer needed for ray tracing too
+    const pathTracingRenderer = new PathTracingRenderer(renderer);
+    pathTracingRenderer.camera = camera;
+    pathTracingRenderer.material = new PhysicalPathTracingMaterial(); // materials need to be physically defined
+
+    const scene = new THREE.Scene();
+
+    const generator = new PathTracingSceneGenerator();
+
+    let gl = renderer.getContext("3d");
+    gl.scissor(1, 1, Math.min(5, renderer.domElement.clientWidth), Math.min(5, renderer.domElement.clientHeight));
+
     const pipeZPosition = -18.1;
     const listener = new THREE.AudioListener();
     camera.add(listener); 
@@ -16,7 +60,6 @@ export function createScene3(renderer, camera) {
         backgroundMusic.play();
     });
 
-  const scene = new THREE.Scene();
   camera.position.set(0, 15, 35);
   camera.lookAt(new THREE.Vector3(0, 0, -5));
   
@@ -202,9 +245,9 @@ export function createScene3(renderer, camera) {
   function animate()
   {
     requestAnimationFrame(animate);
-    //Spaceship.updateMatrixWorld();
+    // ray tracing updating:
+    pathTracingRenderer.update(); // this is the essential function needed for enabling ray tracing from the animate function
     
-    //console.log(start);
     if (!gameComplete && !gameOverAlerted&& start)
     {
         // Get the elapsed time
