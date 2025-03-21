@@ -88,7 +88,7 @@ window.addEventListener('click', (event) => {
             {
                 activeScene = scene2;
                 controls.enabled = false; 
-                alert("You Must Clear a Path First! Click on the Moon to be taken to the first obsticle! Not every planet is the smae though! Shoot the Planets multiple times to clear your path!");
+                alert("You Must Clear a Path First! Click on the Moon to be taken to the first obsticle! Not every planet is the same though! Shoot the Planets multiple times to clear your path!");
             }else if (clickedObject === main_hub_spaceship) 
             {
                 // don't create scene 3 until it's been clicked on/selected
